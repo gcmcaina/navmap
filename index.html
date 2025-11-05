@@ -3,18 +3,260 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GCM São Paulo — Guarda Civil Metropolitana</title>
-  <meta name="description" content="Página oficial informativa da Guarda Civil Metropolitana de São Paulo. Atendimento 153. Segurança urbana, proteção de bens, serviços e instalações do município." />
+  <title>GCM São Paulo — Página Oficial</title>
+  <meta name="description" content="Guarda Civil Metropolitana de São Paulo. Emergências e informações: 153. Presença comunitária, proteção do patrimônio e ações de segurança urbana." />
   <link rel="icon" href="assets/brasao-gcm.png" />
   <style>
     :root{
-      /* Azul GCM (blau) e dourado simbologia — referências públicas */
-      --azul-gcm:#0c2a52;
-      --azul-medio:#1f4a82;
-      --azul-claro:#e7effa;
+      --azul:#10325a;
+      --azul-escuro:#0b2442;
+      --azul-claro:#eaf2ff;
       --dourado:#caa245;
-      --cinza:#5a6473;
-      --branco:#ffffff;
-      --vermelho-alerta:#b22222;
+      --cinza:#4b5563;
+      --cinza-borda:#e5e7eb;
+      --bg:#f8fafc;
+      --white:#fff;
+      --danger:#b91c1c;
     }
     *{box-sizing:border-box}
+    html,body{margin:0; padding:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg); color:#0f172a}
+    a{color:inherit}
+    .container{max-width:1140px; margin:0 auto; padding:0 16px}
+    /* Header */
+    header{
+      background:var(--white);
+      position:sticky; top:0; z-index:50;
+      border-bottom:1px solid var(--cinza-borda);
+    }
+    .header-wrap{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:10px 0;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; text-decoration:none;
+    }
+    .brand img{width:44px; height:44px; object-fit:contain}
+    .brand .t1{font-weight:800; font-size:18px; line-height:1.1; color:var(--azul-escuro); margin:0}
+    nav{display:flex; gap:14px; flex-wrap:wrap}
+    nav a{padding:8px 10px; border-radius:8px; text-decoration:none; color:var(--azul-escuro); font-weight:600}
+    nav a:hover{background:var(--azul-claro)}
+    .btn{display:inline-block; padding:10px 14px; border-radius:10px; text-decoration:none; font-weight:700; border:0}
+    .btn-primary{background:var(--dourado); color:#151515}
+    .btn-ghost{border:2px solid var(--azul-escuro); color:var(--azul-escuro); background:transparent}
+    /* Hero */
+    .hero{
+      position:relative; isolation:isolate; min-height:360px; display:flex; align-items:center;
+      color:#ecf2ff; background:linear-gradient(180deg,rgba(11,36,66,.75),rgba(16,50,90,.8)), url('assets/hero-gcm.jpg') center/cover no-repeat;
+    }
+    .hero .container{padding:56px 16px}
+    .kicker{display:inline-block; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); padding:4px 10px; border-radius:999px; font-weight:700; margin-bottom:10px}
+    .hero h2{font-size:34px; margin:0 0 8px}
+    .hero p{margin:0 0 16px; max-width:740px}
+    .hero .cta{display:flex; gap:12px; flex-wrap:wrap}
+    /* Features / Services */
+    .section{padding:28px 0}
+    .section h3{margin:0 0 10px; font-size:22px}
+    .muted{color:var(--cinza)}
+    .grid{
+      display:grid; gap:16px; grid-template-columns:repeat(3,1fr);
+    }
+    @media (max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:640px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:var(--white); border:1px solid var(--cinza-borda); border-radius:12px; padding:16px;
+      box-shadow:0 1px 2px rgba(0,0,0,.05);
+    }
+    .icon{
+      width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800;
+      color:#0b2442; background:var(--azul-claro); border:1px solid #dbeafe;
+    }
+    .card h4{margin:10px 0 6px; font-size:18px}
+    .list{margin:8px 0 0 0; padding-left:18px}
+    /* Highlight 153 */
+    .highlight{
+      background:#fff9f0; border:1px solid #fde7c7; border-radius:14px; padding:18px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    }
+    .dial{
+      font-size:30px; font-weight:900; letter-spacing:.5px; color:var(--danger)
+    }
+    /* Two column info */
+    .two{display:grid; grid-template-columns:1.2fr .8fr; gap:16px}
+    @media (max-width:900px){.two{grid-template-columns:1fr}}
+    /* Footer */
+    footer{
+      background:var(--azul-escuro); color:#cbd5e1; margin-top:28px; padding:24px 0; font-size:14px
+    }
+    footer a{color:#d1e4ff; text-decoration:none}
+    .disclaimer{font-size:12px; color:#8ca2c8}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-wrap">
+      <a class="brand" href="/">
+        <img src="assets/brasao-gcm.png" alt="Brasão da Guarda Civil Metropolitana de São Paulo">
+        <h1 class="t1">Guarda Civil Metropolitana — São Paulo</h1>
+      </a>
+      <nav aria-label="principal">
+        <a href="#servicos">Serviços</a>
+        <a href="#programas">Programas</a>
+        <a href="#unidades">Unidades</a>
+        <a href="#transparencia">Transparência</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <a class="btn btn-primary" href="#contato">Ligar 153</a>
+    </div>
+  </header>
+
+  <section class="hero" role="banner">
+    <div class="container">
+      <span class="kicker">Segurança Urbana</span>
+      <h2>Atendimento pelo 153, ações preventivas e apoio à população paulistana</h2>
+      <p>Equipe em regime 24h para proteção de bens, serviços e instalações do município, com integração aos órgãos do Sistema Único de Segurança Pública. </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#contato">Emergência 153</a>
+        <a class="btn btn-ghost" href="#servicos">Conheça os serviços</a>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <section id="servicos" class="section container">
+      <h3>Serviços</h3>
+      <p class="muted">Atuação com foco em presença comunitária, prevenção e resposta rápida às demandas da cidade. </p>
+      <div class="grid">
+        <article class="card">
+          <div class="icon">🏫</div>
+          <h4>Proteção a escolas</h4>
+          <p>Rondas escolares e apoio aos equipamentos municipais, servidores e usuários. </p>
+          <ul class="list">
+            <li>Prevenção e mediação de conflitos.</li>
+            <li>Articulação com demais órgãos municipais.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <div class="icon">🏛️</div>
+          <h4>Patrimônio público</h4>
+          <p>Proteção de bens, serviços e instalações do município, com monitoramento e patrulhamento. </p>
+          <ul class="list">
+            <li>Rondas preventivas 24h.</li>
+            <li>Apoio a operações conjuntas.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <div class="icon">🌳</div>
+          <h4>Proteção ambiental</h4>
+          <p>Apoio a unidades de conservação e ações de proteção ao meio ambiente urbano. </p>
+          <ul class="list">
+            <li>Fiscalizações e apoio intersetorial.</li>
+            <li>Orientação à população.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="highlight" aria-live="polite">
+        <div>
+          <div class="muted">Canal de emergência</div>
+          <div class="dial">Ligue 153</div>
+        </div>
+        <div>
+          <p style="margin:0">Central da Guarda Civil Metropolitana para ocorrências, emergências e informações 24 horas. </p>
+          <p class="muted" style="margin:.25rem 0 0">Chamada padronizada para Guardas Municipais no Brasil. </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="programas" class="section container">
+      <h3>Programas</h3>
+      <div class="grid">
+        <article class="card">
+          <div class="icon">👩‍🦰</div>
+          <h4>Guardiã Maria da Penha</h4>
+          <p>Acompanhamento e fiscalização de medidas protetivas às mulheres, com atendimento dedicado. </p>
+          <p class="muted">Serviço especializado, com canal de contato institucional. </p>
+        </article>
+        <article class="card">
+          <div class="icon">🚸</div>
+          <h4>Proteção à comunidade</h4>
+          <p>Presença comunitária em praças, parques e unidades municipais, com rondas e orientação. </p>
+          <p class="muted">Apoio a pessoas em situação de risco. </p>
+        </article>
+        <article class="card">
+          <div class="icon">📊</div>
+          <h4>Transparência</h4>
+          <p>Indicadores, perguntas frequentes e informações institucionais da segurança urbana. </p>
+          <p class="muted">Acesso à informação conforme legislação municipal. </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="unidades" class="section container two">
+      <div class="card">
+        <h3>Unidades e Inspetorias</h3>
+        <p>Relacione aqui endereços, telefones e horários de atendimento das unidades operacionais e administrativas. </p>
+        <p class="muted">Sugestão: inserir mapa e contatos das inspetorias regionais. </p>
+      </div>
+      <aside class="card">
+        <h3>Identidade e símbolos</h3>
+        <p>O uso do brasão, insígnias e cores deve seguir os decretos e guias de identidade da Prefeitura. </p>
+        <p class="muted">Consulte normativas antes de publicar materiais. </p>
+      </aside>
+    </section>
+
+    <section id="transparencia" class="section container">
+      <h3>Transparência e Acesso</h3>
+      <div class="grid">
+        <article class="card">
+          <h4>Perguntas frequentes</h4>
+          <p>Acionamento pelo 153, canais eletrônicos e serviços relacionados à segurança urbana. </p>
+          <a class="btn btn-ghost" href="#contato">Ver canais</a>
+        </article>
+        <article class="card">
+          <h4>Normativas</h4>
+          <p>Decretos sobre simbologia e insígnias, além de guias de identidade visual municipal. </p>
+          <a class="btn btn-ghost" href="#contato">Solicitar</a>
+        </article>
+        <article class="card">
+          <h4>Boletins e editais</h4>
+          <p>Espaço para publicações e comunicados oficiais atualizados. </p>
+          <a class="btn btn-ghost" href="#contato">Publicar</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="contato" class="section container two">
+      <div class="card">
+        <h3>Contato</h3>
+        <p style="margin:.25rem 0"><strong>Emergência:</strong> 153</p>
+        <p class="muted" style="margin:.25rem 0">Central 24h para ocorrências e informações no município de São Paulo. </p>
+        <form onsubmit="return false" aria-label="contato">
+          <label>Nome<br>
+            <input type="text" name="nome" placeholder="Seu nome" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px">
+          </label>
+          <br><br>
+          <label>Mensagem<br>
+            <textarea name="mensagem" rows="4" placeholder="Sua mensagem" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea>
+          </label>
+          <br><br>
+          <button class="btn btn-primary" type="submit">Enviar</button>
+          <p class="muted" style="margin:.5rem 0 0">Substitua por integração real (protocolo, e-mail, e-SIC). </p>
+        </form>
+      </div>
+      <aside class="card">
+        <h3>Ouvidoria e e‑SIC</h3>
+        <p>Divulgue os canais de ouvidoria e acesso à informação conforme as diretrizes da Prefeitura. </p>
+        <p class="muted">Inclua prazos e procedimentos aplicáveis. </p>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Guarda Civil Metropolitana — São Paulo. Emergências 153. © Prefeitura do Município de São Paulo.</p>
+      <p class="disclaimer">O uso de brasão e insígnias deve seguir decretos específicos e guias de identidade visual municipal.</p>
+    </div>
+  </footer>
+</body>
+</html>
