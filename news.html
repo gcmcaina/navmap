@@ -3,151 +3,75 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Notícias SP – Segurança</title>
+  <title>Notícias SP — Segurança</title>
   <style>
     :root {
-      --bg:#0b0f14;
-      --card:#121821;
-      --text:#e8eef7;
-      --muted:#a9b7c6;
-      --accent:#2dd4bf;
-      --accent-2:#60a5fa;
-      --danger:#f87171;
+      --bg:#0b0f14; --card:#121821; --text:#e8eef7; --muted:#a9b7c6;
+      --accent:#2dd4bf; --accent2:#60a5fa; --danger:#f87171;
     }
-    html,body { height:100%; }
-    body {
-      margin:0; background:var(--bg); color:var(--text);
-      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-      overflow:hidden;
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;overflow:hidden}
+    .wrap{display:grid;grid-template-rows:auto 1fr auto;height:100vh;padding:24px;gap:16px}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+    .title{font-size:2rem;margin:0}
+    .meta{display:flex;gap:18px;align-items:center;color:var(--muted);font-size:1.1rem}
+    .badge{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#012;padding:6px 12px;border-radius:999px;font-weight:600}
+    .carousel{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+    .card{
+      width:92%;max-width:1600px;min-height:55vh;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));
+      border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 36px;box-shadow:0 20px 60px rgba(0,0,0,.35);
+      display:flex;flex-direction:column;justify-content:center;gap:18px
     }
-    .wrap {
-      display:grid; grid-template-rows:auto 1fr auto; height:100vh; padding:24px;
-      gap:16px;
-    }
-    header {
-      display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
-    }
-    .title {
-      font-size:2rem; letter-spacing:.5px; margin:0;
-    }
-    .meta {
-      display:flex; gap:18px; align-items:center; color:var(--muted);
-      font-size:1.1rem;
-    }
-    .badge {
-      background:linear-gradient(90deg, var(--accent), var(--accent-2));
-      color:#012; padding:6px 12px; border-radius:999px; font-weight:600;
-    }
-    .last-update { opacity:.85; }
-    .carousel {
-      position:relative; width:100%; height:100%;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .card {
-      width:92%; max-width:1600px; min-height:55vh;
-      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
-      border:1px solid rgba(255,255,255,0.08);
-      border-radius:20px; padding:32px 36px;
-      box-shadow:0 20px 60px rgba(0,0,0,.35);
-      display:flex; flex-direction:column; justify-content:center; gap:18px;
-      transform:translateZ(0);
-    }
-    .source-row {
-      display:flex; align-items:center; gap:14px; color:var(--muted);
-      font-weight:600; letter-spacing:.3px;
-      font-size:1.4rem; /* aumentado: tamanho da fonte da fonte (veículo) */
-    }
-    .dot { width:10px; height:10px; border-radius:50%; background:var(--accent); }
-    .headline {
-      font-size:3.2rem; line-height:1.15; margin:0;
-      font-weight:800; letter-spacing:.2px;
-    }
-    .info-row {
-      display:flex; align-items:center; gap:16px; color:var(--muted);
-      font-size:1.4rem; /* aumentado: horário maior */
-    }
-    .counter { color:var(--muted); font-weight:600; }
-    .controls { display:flex; align-items:center; gap:10px; }
-    .hint { color:var(--muted); font-size:1rem; }
-    .progress {
-      height:6px; width:100%; background:rgba(255,255,255,0.08);
-      border-radius:999px; overflow:hidden;
-    }
-    .bar {
-      height:100%; width:0%;
-      background:linear-gradient(90deg, var(--accent), var(--accent-2));
-      transition:width .2s linear;
-    }
-    .error {
-      color:var(--danger); font-weight:600; font-size:1.2rem;
-    }
-    @media (max-width:1200px) {
-      .headline { font-size:2.4rem; }
-      .source-row { font-size:1.2rem; }
-      .info-row { font-size:1.2rem; }
-    }
+    .source-row{display:flex;align-items:center;gap:14px;color:var(--muted);font-weight:700;letter-spacing:.3px;font-size:1.5rem}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+    .headline{font-size:3.2rem;line-height:1.15;margin:0;font-weight:800;letter-spacing:.2px}
+    .info-row{display:flex;align-items:center;gap:16px;color:var(--muted);font-size:1.5rem}
+    .counter{color:var(--muted);font-weight:600}
+    .hint{color:var(--muted);font-size:1rem}
+    .progress{height:6px;width:100%;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s linear}
+    .error{color:var(--danger);font-weight:600;font-size:1.2rem}
+    @media(max-width:1200px){.headline{font-size:2.4rem}.source-row{font-size:1.3rem}.info-row{font-size:1.3rem}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <h1 class="title">Últimas notícias de São Paulo</h1>
+      <h1 class="title">Últimas notícias de São Paulo — foco em segurança pública</h1>
       <div class="meta">
         <span class="badge">Carrossel</span>
-        <span class="last-update" id="lastUpdate">Atualizando…</span>
+        <span id="lastUpdate">Atualizando…</span>
       </div>
     </header>
 
     <main class="carousel">
-      <div class="card" id="card">
-        <div class="source-row">
-          <span class="dot"></span>
-          <span id="source">—</span>
-        </div>
+      <div class="card">
+        <div class="source-row"><span class="dot"></span><span id="source">—</span></div>
         <h2 class="headline" id="headline">Carregando…</h2>
-        <div class="info-row">
-          <span id="pubtime">—</span>
-        </div>
-        <div class="controls">
-          <span class="counter" id="counter">0 / 0</span>
-          <span class="hint">Use ← → para navegar</span>
-        </div>
+        <div class="info-row"><span id="pubtime">—</span> <span class="counter" id="counter">0 / 0</span> <span class="hint">← →</span></div>
         <div class="progress"><div class="bar" id="bar"></div></div>
         <div class="error" id="error" style="display:none"></div>
       </div>
     </main>
 
     <footer class="meta">
-      <span>Fontes: G1 São Paulo; Google Notícias tópico São Paulo</span>
+      <span>Fontes: G1 São Paulo; Google News (busca com termos de crime + “São Paulo”)</span>
     </footer>
   </div>
 
   <script>
-    // CONFIGURAÇÕES
+    // CONFIG
     const SOURCES = [
-      {
-        name: "g1 São Paulo",
-        url: "https://g1.globo.com/dynamo/sao-paulo/rss2.xml" // feed oficial SP
-      },
-      {
-        name: "Google Notícias (São Paulo)",
-        url: "https://news.google.com/rss/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiUENCSVNOam9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q3hJSkwyMHZNREl5Y0dadGVnc0tDUzl0THpBeU1uQm1iU2dBKjEIACotCAoiJ0NCSVNGem9JYkc5allXeGZkako2Q3dvSkwyMHZNREl5Y0dadEtBQVABUAE?hl=pt-BR&gl=BR&ceid=BR%3Apt-419"
-      }
+      { name: "g1 São Paulo", url: "https://g1.globo.com/dynamo/sao-paulo/rss2.xml" }, // RSS oficial SP
+      { name: "Google News (Busca SP/crime)", url:
+        "https://news.google.com/rss/search?q=%28crime%20OR%20assalto%20OR%20roubo%20OR%20tiroteio%20OR%20homic%C3%ADdio%20OR%20latroc%C3%ADnio%20OR%20sequestro%20OR%20tr%C3%A1fico%20OR%20feminic%C3%ADdio%20OR%20golpe%20OR%20furto%20OR%20estupro%20OR%20viol%C3%AAncia%20OR%20acidente%29%20%22S%C3%A3o%20Paulo%22&hl=pt-BR&gl=BR&ceid=BR%3Apt-419"
+      } // formato suportado pelo endpoint /rss/search com q/hl/gl/ceid
     ];
-    const MAX_PER_SOURCE = 20;         // últimas 20 por fonte
-    const SLIDE_MS = 10000;            // 10s por item
-    const REFRESH_MS = 10 * 60 * 1000; // 10 minutos
-    const CORS_PROXY = "https://r.jina.ai/http/"; // proxy leitura-anônima (somente GET)
-
-    // Palavras-chave relacionadas a crime/segurança
-    const CRIME_KEYWORDS = [
-      "crime","crimes","assalto","assaltos","roubo","roubos","furto","furtos",
-      "homicídio","homicidios","homicídios","latrocínio","latrocínios","sequestro",
-      "sequestr","tiroteio","tiros","facção","facções","PCC","milícia","milícias",
-      "tráfico","traficante","traficantes","fuga","cadeia","presídio","polícia",
-      "policial","viatura","investigação","investiga","operação","bala perdida",
-      "carro-forte","arrastão","golpe","estelionato","estupro","feminicídio"
-    ];
+    const MAX_PER_SOURCE = 20;
+    const SLIDE_MS = 10000;             // 10s por item
+    const REFRESH_MS = 10 * 60 * 1000;  // 10 min
+    // AllOrigins /get retorna JSON: { contents: "<xml ...>" }
+    const ORIGINS = "https://api.allorigins.win/get?url=";
 
     const el = {
       source: document.getElementById("source"),
@@ -159,93 +83,81 @@
       error: document.getElementById("error")
     };
 
-    let queue = []; // itens intercalados
+    let queue = [];
     let idx = 0;
     let timer = null;
     let barTimer = null;
 
-    function fmtDate(d) {
-      try {
-        const dt = new Date(d);
-        return dt.toLocaleString("pt-BR", { hour12:false });
-      } catch { return d || "—"; }
+    function fmtDate(d){
+      const dt = new Date(d);
+      if (isNaN(dt)) return d || "—";
+      return dt.toLocaleString("pt-BR",{ hour12:false });
     }
 
-    function hasCrimeKeyword(text) {
-      if (!text) return false;
-      const t = text.toLowerCase();
-      return CRIME_KEYWORDS.some(k => t.includes(k.toLowerCase()));
+    async function fetchRSS(url){
+      // usa encodeURIComponent para o parâmetro url do AllOrigins
+      const res = await fetch(ORIGINS + encodeURIComponent(url));
+      if(!res.ok) throw new Error("CORS/HTTP " + res.status);
+      const data = await res.json();
+      if(!data || !data.contents) throw new Error("Sem contents do proxy");
+      return data.contents;
     }
 
-    async function fetchText(url) {
-      const res = await fetch(CORS_PROXY + url);
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return await res.text();
-    }
-
-    function parseRSS(xmlString, sourceName) {
+    function parseRSS(xmlString, sourceName){
       const parser = new DOMParser();
       const doc = parser.parseFromString(xmlString, "text/xml");
 
-      // Itens podem estar em <item> (RSS) ou <entry> (Atom)
-      const items = [...doc.querySelectorAll("item, entry")].map(it => {
+      // RSS: <item>, Atom: <entry>
+      const items = [...doc.querySelectorAll("item, entry")].map(it=>{
         const title = it.querySelector("title")?.textContent?.trim() || "";
-        // Links: RSS <link>, Atom <link href="">
-        let link = it.querySelector("link")?.getAttribute?.("href") || it.querySelector("link")?.textContent || "";
-        // Datas: pubDate (RSS) ou updated/published (Atom)
+        // link pode estar como <link>texto</link> (RSS) ou <link href="..."> (Atom)
+        let link = "";
+        const linkEl = it.querySelector("link");
+        if (linkEl) {
+          link = linkEl.getAttribute("href") || linkEl.textContent || "";
+        }
         const pub = it.querySelector("pubDate, updated, published")?.textContent || "";
 
-        return { title, link, pub, source: sourceName };
+        return { title, link, pub, source: sourceName, ts: Date.parse(pub || "") || 0 };
       });
 
-      // Foco em crime apenas pelo título
-      const filtered = items.filter(i => hasCrimeKeyword(i.title));
+      // já buscamos Google News com os termos de crime; no G1, podemos reter todos ou manter um filtro leve
+      const filtered = sourceName.startsWith("g1")
+        ? items.filter(i => i.title) // mantém todos os títulos do G1
+        : items; // Google News já está filtrado na query
 
-      // Pega as últimas 20 (ordena por data quando possível)
-      const dated = filtered.map(i => ({...i, ts: Date.parse(i.pub || "") || 0 }));
-      dated.sort((a,b)=> b.ts - a.ts);
-      return dated.slice(0, MAX_PER_SOURCE);
+      filtered.sort((a,b)=> b.ts - a.ts);
+      return filtered.slice(0, MAX_PER_SOURCE);
     }
 
-    function interleave(arrays) {
-      const out = [];
-      let more = true;
-      let i = 0;
-      while (more) {
-        more = false;
-        for (const a of arrays) {
-          if (i < a.length) {
-            out.push(a[i]);
-            more = true;
-          }
+    function interleave(arrays){
+      const out=[]; let more=true; let i=0;
+      while(more){
+        more=false;
+        for(const a of arrays){
+          if(i < a.length){ out.push(a[i]); more=true; }
         }
         i++;
       }
       return out;
     }
 
-    function setError(msg) {
-      el.error.textContent = msg;
-      el.error.style.display = msg ? "block" : "none";
-    }
-
-    function renderCurrent() {
-      if (!queue.length) {
-        el.source.textContent = "—";
-        el.headline.textContent = "Sem notícias no momento (verifique filtros).";
-        el.pubtime.textContent = "—";
-        el.counter.textContent = "0 / 0";
+    function render(){
+      if(!queue.length){
+        el.source.textContent="—";
+        el.headline.textContent="Sem notícias no momento.";
+        el.pubtime.textContent="—";
+        el.counter.textContent="0 / 0";
         return;
       }
       const item = queue[idx % queue.length];
       el.source.textContent = item.source;
       el.headline.textContent = item.title;
-      el.headline.onclick = () => { if (item.link) window.open(item.link, "_blank"); };
+      el.headline.onclick = ()=>{ if(item.link) window.open(item.link, "_blank"); };
       el.pubtime.textContent = item.pub ? fmtDate(item.pub) : "—";
       el.counter.textContent = `${(idx % queue.length)+1} / ${queue.length}`;
 
-      // Reinicia barra de progresso
-      el.bar.style.width = "0%";
+      el.bar.style.width="0%";
       if (barTimer) clearInterval(barTimer);
       const start = Date.now();
       barTimer = setInterval(()=>{
@@ -255,49 +167,47 @@
       }, 100);
     }
 
-    function startCarousel() {
+    function startCarousel(){
       if (timer) clearInterval(timer);
-      timer = setInterval(()=>{
-        idx = (idx + 1) % Math.max(queue.length, 1);
-        renderCurrent();
-      }, SLIDE_MS);
-      renderCurrent();
+      timer = setInterval(()=>{ idx = (idx+1) % Math.max(queue.length,1); render(); }, SLIDE_MS);
+      render();
     }
 
-    async function refreshAll() {
-      try {
-        setError("");
+    async function refresh(){
+      try{
+        el.error.style.display="none"; el.error.textContent="";
         const results = await Promise.allSettled(
           SOURCES.map(async s => {
-            const txt = await fetchText(s.url);
-            return parseRSS(txt, s.name);
+            const xml = await fetchRSS(s.url);
+            return parseRSS(xml, s.name);
           })
         );
         const arrays = results.map(r => Array.isArray(r.value) ? r.value : []);
-        const inter = interleave(arrays);
-        queue = inter;
+        queue = interleave(arrays);
         idx = 0;
         el.lastUpdate.textContent = "Atualizado: " + fmtDate(new Date());
         startCarousel();
 
-        if (!queue.length) {
-          setError("Nenhum item após aplicar filtros de crime. Ajuste as palavras‑chave se necessário.");
+        if(!queue.length){
+          el.error.textContent = "Nenhum item retornado; verifique conectividade ou disponibilidade dos feeds.";
+          el.error.style.display = "block";
         }
-      } catch (e) {
-        setError("Falha ao atualizar feeds: " + (e.message || e.toString()));
+      }catch(e){
+        el.error.textContent = "Falha ao carregar feeds: " + (e.message || e);
+        el.error.style.display = "block";
       }
     }
 
-    // Navegação manual
-    window.addEventListener("keydown", (ev)=>{
-      if (!queue.length) return;
-      if (ev.key === "ArrowRight") { idx = (idx+1) % queue.length; renderCurrent(); }
-      if (ev.key === "ArrowLeft")  { idx = (idx-1+queue.length) % queue.length; renderCurrent(); }
-    });
+    // Init
+    refresh();
+    setInterval(refresh, REFRESH_MS);
 
-    // Inicialização
-    refreshAll();
-    setInterval(refreshAll, REFRESH_MS);
+    // Navegação manual
+    window.addEventListener("keydown",(ev)=>{
+      if(!queue.length) return;
+      if(ev.key==="ArrowRight"){ idx=(idx+1)%queue.length; render(); }
+      if(ev.key==="ArrowLeft"){ idx=(idx-1+queue.length)%queue.length; render(); }
+    });
   </script>
 </body>
 </html>
