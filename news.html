@@ -1,9 +1,13 @@
+
+Notícias São Paulo Crime
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notícias São Paulo/title>
+    <title>Notícias São Paulo - Crime</title>
     <style>
         :root {
             --color-background: #1a1a2e;
@@ -181,7 +185,7 @@
     </div>
 
     <div class="carousel-container" id="carouselContainer">
-        <div class="loading">Carregando notícias do G1 São Paulo...</div>
+        <div class="loading">Carregando notícias do G1 e Google News...</div>
     </div>
 
     <div class="progress-bar" id="progressBar"></div>
@@ -189,6 +193,7 @@
 
     <script>
         const G1_RSS_URL = 'https://g1.globo.com/dynamo/sp/sao-paulo/rss2.xml';
+        const GOOGLE_NEWS_RSS_URL = 'https://news.google.com/rss/search?q=%28crime%20OR%20assalto%20OR%20roubo%20OR%20tiroteio%20OR%20homic%C3%ADdio%20OR%20latroc%C3%ADnio%20OR%20sequestro%20OR%20tr%C3%A1fico%20OR%20feminic%C3%ADdio%20OR%20golpe%20OR%20furto%20OR%20estupro%20OR%20viol%C3%AAncia%20OR%20acidente%29%20%22S%C3%A3o%20Paulo%22&hl=pt-BR&gl=BR&ceid=BR%3Apt-419';
         const WORKER_PROXY = 'https://news-fetcher.gcmcaina.workers.dev/?url=';
         const UPDATE_INTERVAL = 10 * 60 * 1000; // 10 minutos
         const SLIDE_DURATION = 10000; // 10 segundos
@@ -205,56 +210,85 @@
             console.log(message);
         }
 
+        async function fetchRSSFeed(feedUrl, sourceName) {
+            debugLog(`Buscando ${sourceName}...`);
+            const fetchUrl = WORKER_PROXY + encodeURIComponent(feedUrl);
+            
+            const response = await fetch(fetchUrl);
+            debugLog(`${sourceName} - Status: ${response.status}`);
+            
+            if (!response.ok) {
+                throw new Error(`${sourceName} - Erro HTTP: ${response.status}`);
+            }
+            
+            const xmlText = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            
+            const parseError = xmlDoc.querySelector('parsererror');
+            if (parseError) {
+                throw new Error(`${sourceName} - Erro ao fazer parse do XML`);
+            }
+            
+            // RSS usa <item>, Atom usa <entry>
+            const items = xmlDoc.querySelectorAll('item, entry');
+            debugLog(`${sourceName} - Encontrados ${items.length} items`);
+            
+            return Array.from(items).map(item => {
+                const title = item.querySelector('title')?.textContent || 'Sem título';
+                const linkEl = item.querySelector('link');
+                const link = linkEl?.getAttribute?.('href') || linkEl?.textContent || '';
+                const published = item.querySelector('pubDate, updated, published')?.textContent || '';
+                
+                return {
+                    title: cleanText(title),
+                    link,
+                    pubDate: formatDate(published),
+                    timestamp: new Date(published).getTime() || 0,
+                    source: sourceName,
+                    category: 'São Paulo'
+                };
+            });
+        }
+
         async function fetchNews() {
             try {
-                debugLog('Iniciando busca do G1 São Paulo...');
-                const fetchUrl = WORKER_PROXY + encodeURIComponent(G1_RSS_URL);
-                debugLog('URL do Worker: ' + fetchUrl);
+                debugLog('Iniciando busca de notícias...');
                 
-                const response = await fetch(fetchUrl);
-                debugLog('Response status: ' + response.status);
-                
-                if (!response.ok) {
-                    throw new Error('Erro HTTP: ' + response.status);
-                }
-                
-                const xmlText = await response.text();
-                debugLog('XML recebido, tamanho: ' + xmlText.length + ' caracteres');
-                
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-                
-                // Verifica se há erro de parsing
-                const parseError = xmlDoc.querySelector('parsererror');
-                if (parseError) {
-                    throw new Error('Erro ao fazer parse do XML: ' + parseError.textContent);
-                }
-                
-                // G1 usa formato RSS (item)
-                const items = xmlDoc.querySelectorAll('item');
-                debugLog('Encontrados ' + items.length + ' items no feed');
-                
-                newsItems = Array.from(items).slice(0, 20).map((item, index) => {
-                    const title = item.querySelector('title')?.textContent || 'Sem título';
-                    const link = item.querySelector('link')?.textContent || '';
-                    const published = item.querySelector('pubDate')?.textContent || '';
-                    const source = 'g1 São Paulo';
-                    
-                    debugLog(`Notícia ${index + 1}: ${title.substring(0, 50)}...`);
-                    
-                    return {
-                        title: cleanText(title),
-                        link,
-                        pubDate: formatDate(published),
-                        source: source,
-                        category: 'São Paulo'
-                    };
-                });
+                // Busca ambas as fontes com tratamento independente de erros
+                const results = await Promise.allSettled([
+                    fetchRSSFeed(G1_RSS_URL, 'g1 São Paulo'),
+                    fetchRSSFeed(GOOGLE_NEWS_RSS_URL, 'Google News')
+                ]);
 
-                debugLog('Total de notícias processadas: ' + newsItems.length);
+                const g1Items = results[0].status === 'fulfilled' ? results[0].value : [];
+                const googleItems = results[1].status === 'fulfilled' ? results[1].value : [];
+
+                if (results[0].status === 'rejected') {
+                    debugLog('⚠️ G1 falhou: ' + results[0].reason?.message);
+                }
+                if (results[1].status === 'rejected') {
+                    debugLog('⚠️ Google News falhou (503 - continuando só com G1): ' + results[1].reason?.message);
+                }
+
+                debugLog(`G1: ${g1Items.length} itens, Google News: ${googleItems.length} itens`);
+
+                // Pega 20 de cada fonte (ou o que estiver disponível)
+                const g1Top20 = g1Items.slice(0, 20);
+                const googleTop20 = googleItems.slice(0, 20);
+
+                // Intercala as notícias (alterna entre fontes)
+                newsItems = [];
+                const maxLength = Math.max(g1Top20.length, googleTop20.length);
+                for (let i = 0; i < maxLength; i++) {
+                    if (i < g1Top20.length) newsItems.push(g1Top20[i]);
+                    if (i < googleTop20.length) newsItems.push(googleTop20[i]);
+                }
+
+                debugLog('Total de notícias intercaladas: ' + newsItems.length);
 
                 if (newsItems.length === 0) {
-                    throw new Error('Nenhuma notícia encontrada no feed');
+                    throw new Error('Nenhuma notícia encontrada nos feeds');
                 }
 
                 updateLastUpdate();
