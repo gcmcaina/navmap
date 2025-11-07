@@ -1,213 +1,388 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Notícias SP — Segurança</title>
-  <style>
-    :root {
-      --bg:#0b0f14; --card:#121821; --text:#e8eef7; --muted:#a9b7c6;
-      --accent:#2dd4bf; --accent2:#60a5fa; --danger:#f87171;
-    }
-    html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;overflow:hidden}
-    .wrap{display:grid;grid-template-rows:auto 1fr auto;height:100vh;padding:24px;gap:16px}
-    header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
-    .title{font-size:2rem;margin:0}
-    .meta{display:flex;gap:18px;align-items:center;color:var(--muted);font-size:1.1rem}
-    .badge{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#012;padding:6px 12px;border-radius:999px;font-weight:600}
-    .carousel{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-    .card{
-      width:92%;max-width:1600px;min-height:55vh;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));
-      border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px 36px;box-shadow:0 20px 60px rgba(0,0,0,.35);
-      display:flex;flex-direction:column;justify-content:center;gap:18px
-    }
-    .source-row{display:flex;align-items:center;gap:14px;color:var(--muted);font-weight:700;letter-spacing:.3px;font-size:1.5rem}
-    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
-    .headline{font-size:3.2rem;line-height:1.15;margin:0;font-weight:800;letter-spacing:.2px}
-    .info-row{display:flex;align-items:center;gap:16px;color:var(--muted);font-size:1.5rem}
-    .counter{color:var(--muted);font-weight:600}
-    .hint{color:var(--muted);font-size:1rem}
-    .progress{height:6px;width:100%;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s linear}
-    .error{color:var(--danger);font-weight:600;font-size:1.2rem}
-    @media(max-width:1200px){.headline{font-size:2.4rem}.source-row{font-size:1.3rem}.info-row{font-size:1.3rem}}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícias São Paulo/title>
+    <style>
+        :root {
+            --color-background: #1a1a2e;
+            --color-surface: #16213e;
+            --color-text: #ffffff;
+            --color-text-secondary: #a0a0a0;
+            --color-primary: #0f4c75;
+            --color-accent: #3282b8;
+            --color-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-background);
+            color: var(--color-text);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .header {
+            background: var(--color-surface);
+            padding: 20px 40px;
+            border-bottom: 2px solid var(--color-accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-accent);
+        }
+
+        .last-update {
+            font-size: 1rem;
+            color: var(--color-text-secondary);
+        }
+
+        .carousel-container {
+            height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .news-card {
+            background: var(--color-surface);
+            border-radius: 20px;
+            padding: 60px;
+            max-width: 1400px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-border);
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .news-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .news-category {
+            display: inline-block;
+            background: var(--color-accent);
+            color: var(--color-text);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .news-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .news-title:hover {
+            color: var(--color-accent);
+        }
+
+        .news-meta {
+            display: flex;
+            gap: 30px;
+            font-size: 1.5rem;
+            color: var(--color-text-secondary);
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .news-source {
+            font-weight: 600;
+            color: var(--color-accent);
+            font-size: 1.5rem;
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--color-accent);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.5rem;
+            color: var(--color-text-secondary);
+        }
+
+        .news-counter {
+            font-size: 1.2rem;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #ff4444;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 40px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--color-surface);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            max-width: 300px;
+            border: 1px solid var(--color-border);
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1 class="title">Últimas notícias de São Paulo — foco em segurança pública</h1>
-      <div class="meta">
-        <span class="badge">Carrossel</span>
-        <span id="lastUpdate">Atualizando…</span>
-      </div>
-    </header>
+    <div class="header">
+        <h1>📰 Últimas Notícias de São Paulo</h1>
+        <div>
+            <div class="news-counter" id="newsCounter">Carregando...</div>
+            <div class="last-update" id="lastUpdate">Atualizando...</div>
+        </div>
+    </div>
 
-    <main class="carousel">
-      <div class="card">
-        <div class="source-row"><span class="dot"></span><span id="source">—</span></div>
-        <h2 class="headline" id="headline">Carregando…</h2>
-        <div class="info-row"><span id="pubtime">—</span> <span class="counter" id="counter">0 / 0</span> <span class="hint">← →</span></div>
-        <div class="progress"><div class="bar" id="bar"></div></div>
-        <div class="error" id="error" style="display:none"></div>
-      </div>
-    </main>
+    <div class="carousel-container" id="carouselContainer">
+        <div class="loading">Carregando notícias do G1 São Paulo...</div>
+    </div>
 
-    <footer class="meta">
-      <span>Fontes: G1 São Paulo; Google News (busca com termos de crime + “São Paulo”)</span>
-    </footer>
-  </div>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="debug-info" id="debugInfo" style="display: none;"></div>
 
-  <script>
-    // CONFIG
-    const SOURCES = [
-      { name: "g1 São Paulo", url: "https://g1.globo.com/dynamo/sao-paulo/rss2.xml" }, // RSS oficial SP
-      { name: "Google News (Busca SP/crime)", url:
-        "https://news.google.com/rss/search?q=%28crime%20OR%20assalto%20OR%20roubo%20OR%20tiroteio%20OR%20homic%C3%ADdio%20OR%20latroc%C3%ADnio%20OR%20sequestro%20OR%20tr%C3%A1fico%20OR%20feminic%C3%ADdio%20OR%20golpe%20OR%20furto%20OR%20estupro%20OR%20viol%C3%AAncia%20OR%20acidente%29%20%22S%C3%A3o%20Paulo%22&hl=pt-BR&gl=BR&ceid=BR%3Apt-419"
-      } // formato suportado pelo endpoint /rss/search com q/hl/gl/ceid
-    ];
-    const MAX_PER_SOURCE = 20;
-    const SLIDE_MS = 10000;             // 10s por item
-    const REFRESH_MS = 10 * 60 * 1000;  // 10 min
-    // AllOrigins /get retorna JSON: { contents: "<xml ...>" }
-    const ORIGINS = "https://api.allorigins.win/get?url=";
+    <script>
+        const G1_RSS_URL = 'https://g1.globo.com/dynamo/sao-paulo/rss2.xml';
+        const WORKER_PROXY = 'https://news-fetcher.gcmcaina.workers.dev/?url=';
+        const UPDATE_INTERVAL = 10 * 60 * 1000; // 10 minutos
+        const SLIDE_DURATION = 10000; // 10 segundos
 
-    const el = {
-      source: document.getElementById("source"),
-      headline: document.getElementById("headline"),
-      pubtime: document.getElementById("pubtime"),
-      counter: document.getElementById("counter"),
-      bar: document.getElementById("bar"),
-      lastUpdate: document.getElementById("lastUpdate"),
-      error: document.getElementById("error")
-    };
+        let newsItems = [];
+        let currentIndex = 0;
+        let slideInterval;
+        let progressInterval;
 
-    let queue = [];
-    let idx = 0;
-    let timer = null;
-    let barTimer = null;
-
-    function fmtDate(d){
-      const dt = new Date(d);
-      if (isNaN(dt)) return d || "—";
-      return dt.toLocaleString("pt-BR",{ hour12:false });
-    }
-
-    async function fetchRSS(url){
-      // usa encodeURIComponent para o parâmetro url do AllOrigins
-      const res = await fetch(ORIGINS + encodeURIComponent(url));
-      if(!res.ok) throw new Error("CORS/HTTP " + res.status);
-      const data = await res.json();
-      if(!data || !data.contents) throw new Error("Sem contents do proxy");
-      return data.contents;
-    }
-
-    function parseRSS(xmlString, sourceName){
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlString, "text/xml");
-
-      // RSS: <item>, Atom: <entry>
-      const items = [...doc.querySelectorAll("item, entry")].map(it=>{
-        const title = it.querySelector("title")?.textContent?.trim() || "";
-        // link pode estar como <link>texto</link> (RSS) ou <link href="..."> (Atom)
-        let link = "";
-        const linkEl = it.querySelector("link");
-        if (linkEl) {
-          link = linkEl.getAttribute("href") || linkEl.textContent || "";
+        function debugLog(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            console.log(message);
         }
-        const pub = it.querySelector("pubDate, updated, published")?.textContent || "";
 
-        return { title, link, pub, source: sourceName, ts: Date.parse(pub || "") || 0 };
-      });
+        async function fetchNews() {
+            try {
+                debugLog('Iniciando busca do G1 São Paulo...');
+                const fetchUrl = WORKER_PROXY + encodeURIComponent(G1_RSS_URL);
+                debugLog('URL do Worker: ' + fetchUrl);
+                
+                const response = await fetch(fetchUrl);
+                debugLog('Response status: ' + response.status);
+                
+                if (!response.ok) {
+                    throw new Error('Erro HTTP: ' + response.status);
+                }
+                
+                const xmlText = await response.text();
+                debugLog('XML recebido, tamanho: ' + xmlText.length + ' caracteres');
+                
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+                
+                // Verifica se há erro de parsing
+                const parseError = xmlDoc.querySelector('parsererror');
+                if (parseError) {
+                    throw new Error('Erro ao fazer parse do XML: ' + parseError.textContent);
+                }
+                
+                // G1 usa formato RSS (item)
+                const items = xmlDoc.querySelectorAll('item');
+                debugLog('Encontrados ' + items.length + ' items no feed');
+                
+                newsItems = Array.from(items).slice(0, 20).map((item, index) => {
+                    const title = item.querySelector('title')?.textContent || 'Sem título';
+                    const link = item.querySelector('link')?.textContent || '';
+                    const published = item.querySelector('pubDate')?.textContent || '';
+                    const source = 'g1 São Paulo';
+                    
+                    debugLog(`Notícia ${index + 1}: ${title.substring(0, 50)}...`);
+                    
+                    return {
+                        title: cleanText(title),
+                        link,
+                        pubDate: formatDate(published),
+                        source: source,
+                        category: 'São Paulo'
+                    };
+                });
 
-      // já buscamos Google News com os termos de crime; no G1, podemos reter todos ou manter um filtro leve
-      const filtered = sourceName.startsWith("g1")
-        ? items.filter(i => i.title) // mantém todos os títulos do G1
-        : items; // Google News já está filtrado na query
+                debugLog('Total de notícias processadas: ' + newsItems.length);
 
-      filtered.sort((a,b)=> b.ts - a.ts);
-      return filtered.slice(0, MAX_PER_SOURCE);
-    }
+                if (newsItems.length === 0) {
+                    throw new Error('Nenhuma notícia encontrada no feed');
+                }
 
-    function interleave(arrays){
-      const out=[]; let more=true; let i=0;
-      while(more){
-        more=false;
-        for(const a of arrays){
-          if(i < a.length){ out.push(a[i]); more=true; }
+                updateLastUpdate();
+                renderCarousel();
+                startCarousel();
+                
+                // Oculta debug após sucesso
+                setTimeout(() => {
+                    document.getElementById('debugInfo').style.display = 'none';
+                }, 5000);
+                
+            } catch (error) {
+                debugLog('ERRO: ' + error.message);
+                console.error('Erro detalhado:', error);
+                document.getElementById('carouselContainer').innerHTML = 
+                    `<div class="error-message">Erro ao carregar notícias: ${error.message}<br>Tentando novamente em 10 segundos...</div>`;
+                setTimeout(fetchNews, 10000);
+            }
         }
-        i++;
-      }
-      return out;
-    }
 
-    function render(){
-      if(!queue.length){
-        el.source.textContent="—";
-        el.headline.textContent="Sem notícias no momento.";
-        el.pubtime.textContent="—";
-        el.counter.textContent="0 / 0";
-        return;
-      }
-      const item = queue[idx % queue.length];
-      el.source.textContent = item.source;
-      el.headline.textContent = item.title;
-      el.headline.onclick = ()=>{ if(item.link) window.open(item.link, "_blank"); };
-      el.pubtime.textContent = item.pub ? fmtDate(item.pub) : "—";
-      el.counter.textContent = `${(idx % queue.length)+1} / ${queue.length}`;
-
-      el.bar.style.width="0%";
-      if (barTimer) clearInterval(barTimer);
-      const start = Date.now();
-      barTimer = setInterval(()=>{
-        const pct = Math.min(100, ((Date.now()-start)/SLIDE_MS)*100);
-        el.bar.style.width = pct + "%";
-        if (pct >= 100) clearInterval(barTimer);
-      }, 100);
-    }
-
-    function startCarousel(){
-      if (timer) clearInterval(timer);
-      timer = setInterval(()=>{ idx = (idx+1) % Math.max(queue.length,1); render(); }, SLIDE_MS);
-      render();
-    }
-
-    async function refresh(){
-      try{
-        el.error.style.display="none"; el.error.textContent="";
-        const results = await Promise.allSettled(
-          SOURCES.map(async s => {
-            const xml = await fetchRSS(s.url);
-            return parseRSS(xml, s.name);
-          })
-        );
-        const arrays = results.map(r => Array.isArray(r.value) ? r.value : []);
-        queue = interleave(arrays);
-        idx = 0;
-        el.lastUpdate.textContent = "Atualizado: " + fmtDate(new Date());
-        startCarousel();
-
-        if(!queue.length){
-          el.error.textContent = "Nenhum item retornado; verifique conectividade ou disponibilidade dos feeds.";
-          el.error.style.display = "block";
+        function cleanText(text) {
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent || div.innerText || '';
         }
-      }catch(e){
-        el.error.textContent = "Falha ao carregar feeds: " + (e.message || e);
-        el.error.style.display = "block";
-      }
-    }
 
-    // Init
-    refresh();
-    setInterval(refresh, REFRESH_MS);
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                
+                if (diffMins < 60) {
+                    return `${diffMins} min atrás`;
+                } else if (diffHours < 24) {
+                    return `${diffHours}h atrás`;
+                } else {
+                    return date.toLocaleDateString('pt-BR', { 
+                        day: '2-digit', 
+                        month: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            } catch (e) {
+                return dateString;
+            }
+        }
 
-    // Navegação manual
-    window.addEventListener("keydown",(ev)=>{
-      if(!queue.length) return;
-      if(ev.key==="ArrowRight"){ idx=(idx+1)%queue.length; render(); }
-      if(ev.key==="ArrowLeft"){ idx=(idx-1+queue.length)%queue.length; render(); }
-    });
-  </script>
+        function renderCarousel() {
+            const container = document.getElementById('carouselContainer');
+            container.innerHTML = newsItems.map((news, index) => `
+                <div class="news-card ${index === 0 ? 'active' : ''}" data-index="${index}">
+                    <div class="news-category">${news.category}</div>
+                    <h2 class="news-title" onclick="window.open('${news.link}', '_blank')">${news.title}</h2>
+                    <div class="news-meta">
+                        <span class="news-source">${news.source}</span>
+                        <span>${news.pubDate}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('newsCounter').textContent = 
+                `${currentIndex + 1} / ${newsItems.length}`;
+        }
+
+        function showSlide(index) {
+            const cards = document.querySelectorAll('.news-card');
+            cards.forEach(card => card.classList.remove('active'));
+            
+            if (cards[index]) {
+                cards[index].classList.add('active');
+                currentIndex = index;
+                document.getElementById('newsCounter').textContent = 
+                    `${currentIndex + 1} / ${newsItems.length}`;
+            }
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % newsItems.length;
+            showSlide(currentIndex);
+        }
+
+        function startCarousel() {
+            if (slideInterval) clearInterval(slideInterval);
+            if (progressInterval) clearInterval(progressInterval);
+
+            slideInterval = setInterval(nextSlide, SLIDE_DURATION);
+
+            let progress = 0;
+            const progressBar = document.getElementById('progressBar');
+            progressInterval = setInterval(() => {
+                progress += 100 / (SLIDE_DURATION / 100);
+                if (progress >= 100) {
+                    progress = 0;
+                }
+                progressBar.style.width = progress + '%';
+            }, 100);
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('lastUpdate').textContent = 
+                `Última atualização: ${timeString}`;
+        }
+
+        // Inicialização
+        fetchNews();
+        setInterval(fetchNews, UPDATE_INTERVAL);
+
+        // Navegação manual com teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+                startCarousel();
+            } else if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
+                showSlide(currentIndex);
+                startCarousel();
+            }
+        });
+    </script>
 </body>
 </html>
