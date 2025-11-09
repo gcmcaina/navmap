@@ -253,7 +253,7 @@
                 
                 // Busca ambas as fontes com tratamento independente de erros
                 const results = await Promise.allSettled([
-                    fetchRSSFeed(G1_RSS_URL, 'g1 São Paulo'),
+                    fetchRSSFeed(G1_RSS_URL, 'G1'),
                     fetchRSSFeed(GOOGLE_NEWS_RSS_URL, 'Google News')
                 ]);
 
@@ -273,7 +273,7 @@
                 const keywords = [
                     'crime', 'crimes', 'assalto', 'roubo', 'furto', 'homicídio', 'latrocínio',
                     'sequestro', 'tiroteio', 'tráfico', 'feminicídio', 'golpe', 'estupro',
-                    'violência', 'facção', 'pcc', 'milícia', 'polícia', 'policial',
+                    'violência', 'facção', 'pcc', 'cv', 'comando vermelho', 'milícia', 'polícia', 'policial',
                     'gcm', 'guarda civil', 'guarda municipal', 'guarda metropolitana',
                     'operação', 'prisão', 'preso', 'investigação', 'delegacia',
                     'arma', 'droga', 'entorpecente', 'flagrante', 'suspeito',
