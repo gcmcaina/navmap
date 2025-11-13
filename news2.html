@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícias SP</title>
+    <style>
+        :root {
+            --color-background: #1a1a2e;
+            --color-surface: #16213e;
+            --color-text: #ffffff;
+            --color-text-secondary: #a0a0a0;
+            --color-primary: #0f4c75;
+            --color-accent: #3282b8;
+            --color-gcm: #ffd700;
+            --color-gcm-bg: #2a2200;
+            --color-alert: #ff4444;
+            --color-alert-bg: #2a0000;
+            --color-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-background);
+            color: var(--color-text);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .header {
+            background: var(--color-surface);
+            padding: 20px 40px;
+            border-bottom: 2px solid var(--color-accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-accent);
+        }
+
+        .last-update {
+            font-size: 1rem;
+            color: var(--color-text-secondary);
+        }
+
+        .carousel-container {
+            height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .news-card {
+            background: var(--color-surface);
+            border-radius: 20px;
+            padding: 60px;
+            max-width: 1400px;
+            width: 100%;
+			height: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-border);
+            position: absolute;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        .news-card.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Card especial para notícias da GCM */
+        .news-card.gcm-highlight {
+            background: linear-gradient(135deg, var(--color-gcm-bg) 0%, var(--color-surface) 100%);
+            border: 2px solid var(--color-gcm);
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.2);
+        }
+
+        .news-card.gcm-highlight .news-category {
+            background: var(--color-gcm);
+            color: #000;
+            font-weight: 700;
+        }
+
+        .news-card.gcm-highlight .news-title {
+            color: var(--color-gcm);
+        }
+
+        /* Card de alerta para notícias muito recentes */
+        .news-card.alert-news {
+            background: linear-gradient(135deg, var(--color-alert-bg) 0%, var(--color-surface) 100%);
+            border: 2px solid var(--color-alert);
+            box-shadow: 0 10px 40px rgba(255, 68, 68, 0.3);
+            animation: alertPulse 2s infinite;
+        }
+
+        .news-card.alert-news .news-category {
+            background: var(--color-alert);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% {
+                box-shadow: 0 10px 40px rgba(255, 68, 68, 0.3);
+            }
+            50% {
+                box-shadow: 0 10px 40px rgba(255, 68, 68, 0.6);
+            }
+        }
+
+        .gcm-badge {
+            display: inline-block;
+            background: var(--color-gcm);
+            color: #000;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-left: 10px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .alert-badge {
+            display: inline-block;
+            background: var(--color-alert);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-left: 10px;
+            text-transform: uppercase;
+            animation: alertBlink 1.5s infinite;
+        }
+
+        @keyframes alertBlink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .news-category {
+            display: inline-block;
+            background: var(--color-accent);
+            color: var(--color-text);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .news-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: var(--color-text);
+            cursor: pointer;
+            transition: color 0.3s ease;
+			display: -webkit-box;
+			-webkit-line-clamp: 3;  /* Número de linhas antes do ... */
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			min-height: 252px;  /* 3 linhas * 84px (tamanho da linha) */
+			max-height: 252px;
+        }
+
+        .news-title:hover {
+            color: var(--color-accent);
+        }
+
+        .news-meta {
+            display: flex;
+            gap: 30px;
+            font-size: 1.5rem;
+            color: var(--color-text-secondary);
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .news-source {
+            font-weight: 600;
+            color: var(--color-accent);
+            font-size: 1.5rem;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--color-accent);
+            width: 0%;
+            transition: width 0.1s linear;
+			border-radius: 0 0 20px 20px;
+        }
+
+        .news-card.gcm-highlight .progress-bar {
+            background: var(--color-gcm);
+        }
+
+        .news-card.alert-news .progress-bar {
+            background: var(--color-alert);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.5rem;
+            color: var(--color-text-secondary);
+        }
+
+        .news-counter {
+            font-size: 1.2rem;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #ff4444;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 40px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: var(--color-surface);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            max-width: 300px;
+            border: 1px solid var(--color-border);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚔 Notícias SP</h1>
+        <div>
+            <div class="news-counter" id="newsCounter">Carregando...</div>
+            <div class="last-update" id="lastUpdate">Atualizando...</div>
+        </div>
+    </div>
+
+    <div class="carousel-container" id="carouselContainer">
+        <div class="loading">Carregando notícias de múltiplas fontes...</div>
+    </div>
+
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="debug-info" id="debugInfo" style="display: none;"></div>
+
+    <script>
+        const FEEDS = [
+            { url: 'https://g1.globo.com/dynamo/sp/sao-paulo/rss2.xml', name: 'G1', limit: 15 },
+            { url: 'https://news.google.com/rss/search?q=%28crime%20OR%20assalto%20OR%20roubo%20OR%20tiroteio%20OR%20homic%C3%ADdio%20OR%20latroc%C3%ADnio%20OR%20sequestro%20OR%20tr%C3%A1fico%20OR%20feminic%C3%ADdio%20OR%20golpe%20OR%20furto%20OR%20estupro%20OR%20viol%C3%AAncia%20OR%20acidente%29%20%22S%C3%A3o%20Paulo%22&hl=pt-BR&gl=BR&ceid=BR%3Apt-419', name: 'Google News', limit: 15 },
+            { url: 'https://rss.uol.com.br/feed/noticias.xml', name: 'UOL', limit: 7 },
+            { url: 'https://www.gazetadopovo.com.br/feed/rss/republica.xml', name: 'Gazeta - República', limit: 5 },
+            { url: 'https://www.gazetadopovo.com.br/feed/rss/ultimas-noticias.xml', name: 'Gazeta - Últimas', limit: 4 },
+            { url: 'https://www.gazetadopovo.com.br/feed/rss/sao-paulo.xml', name: 'Gazeta - SP', limit: 4 }
+        ];
+
+        const WORKER_PROXY = 'https://news-fetcher.gcmcaina.workers.dev/?url=';
+        const UPDATE_INTERVAL = 30 * 60 * 1000;
+        const SLIDE_DURATION = 12000;
+        const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+        const ONE_HOUR_MS = 60 * 60 * 1000;
+
+        let newsItems = [];
+        let currentIndex = 0;
+        let slideInterval;
+        let progressInterval;
+
+        function debugLog(message) {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = 'block';
+            const time = new Date().toLocaleTimeString('pt-BR');
+            debugDiv.innerHTML += `<div>${time}: ${message}</div>`;
+            console.log(message);
+        }
+
+        function isGCMRelated(title) {
+            const gcmKeywords = [
+                'gcm', 'guarda civil', 'guarda municipal', 'guarda metropolitana',
+                'guardas civis', 'guardas municipais'
+            ];
+            const titleLower = title.toLowerCase();
+            return gcmKeywords.some(keyword => titleLower.includes(keyword));
+        }
+
+        function isRecent(dateString) {
+            if (!dateString) return false;
+            try {
+                const itemDate = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - itemDate;
+                return diffMs <= TWO_DAYS_MS;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function isVeryRecent(dateString) {
+            if (!dateString) return false;
+            try {
+                const itemDate = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - itemDate;
+                return diffMs <= ONE_HOUR_MS;
+            } catch (e) {
+                return false;
+            }
+        }
+		
+        function normalizeTitle(title) {
+            return title
+                .toLowerCase()
+                .replace(/[áàâãä]/g, 'a')
+                .replace(/[éèêë]/g, 'e')
+                .replace(/[íìîï]/g, 'i')
+                .replace(/[óòôõö]/g, 'o')
+                .replace(/[úùûü]/g, 'u')
+                .replace(/[ç]/g, 'c')
+                .replace(/[^a-z0-9]/g, '')
+                .substring(0, 50);
+        }
+
+        function isDuplicate(newItem, existingItems) {
+            const newTitleNormalized = normalizeTitle(newItem.title);
+            
+            return existingItems.some(existing => {
+                const existingTitleNormalized = normalizeTitle(existing.title);
+                
+                if (newTitleNormalized === existingTitleNormalized) {
+                    return true;
+                }
+                
+                const similarity = calculateSimilarity(newTitleNormalized, existingTitleNormalized);
+                return similarity > 0.85;
+            });
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const editDistance = levenshteinDistance(longer, shorter);
+            return (longer.length - editDistance) / longer.length;
+        }
+
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            return matrix[str2.length][str1.length];
+        }
+
+        async function fetchRSSFeed(feedUrl, sourceName) {
+            debugLog(`Buscando ${sourceName}...`);
+            const fetchUrl = WORKER_PROXY + encodeURIComponent(feedUrl);
+            
+            const response = await fetch(fetchUrl);
+            debugLog(`${sourceName} - Status: ${response.status}`);
+            
+            if (!response.ok) {
+                throw new Error(`${sourceName} - Erro HTTP: ${response.status}`);
+            }
+            
+            const xmlText = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+            
+            const parseError = xmlDoc.querySelector('parsererror');
+            if (parseError) {
+                throw new Error(`${sourceName} - Erro ao fazer parse do XML`);
+            }
+            
+            const items = xmlDoc.querySelectorAll('item, entry');
+            debugLog(`${sourceName} - Encontrados ${items.length} items`);
+            
+            return Array.from(items).map(item => {
+                const title = item.querySelector('title')?.textContent || 'Sem título';
+                const linkEl = item.querySelector('link');
+                const link = linkEl?.getAttribute?.('href') || linkEl?.textContent || '';
+                const published = item.querySelector('pubDate, updated, published')?.textContent || '';
+                
+                return {
+                    title: cleanText(title),
+                    link,
+                    pubDate: published,
+                    timestamp: new Date(published).getTime() || 0,
+                    source: sourceName,
+                    category: 'São Paulo',
+                    isGCM: isGCMRelated(title),
+                    isAlert: isVeryRecent(published)
+                };
+            });
+        }
+
+        async function fetchNews() {
+            try {
+                debugLog('Iniciando busca de notícias...');
+                
+                const keywords = [
+                    'crime', 'crimes', 'assalto', 'roubo', 'furto', 'homicídio', 'homicidio', 'latrocínio', 'latrocinio',
+                    'sequestro', 'tiroteio', 'tráfico', 'trafico', 'feminicídio', 'feminicidio', 'golpe', 'estupro',
+                    'violência', 'violencia', 'facção', 'faccao', 'pcc', 'cv', 'comando vermelho', 'milícia', 'militia',
+                    'polícia', 'policia', 'policial',
+                    'gcm', 'guarda civil', 'guarda municipal', 'guarda metropolitana',
+                    'operação', 'operacao', 'prisão', 'prisao', 'preso', 'investigação', 'investigacao', 'delegacia',
+                    'arma', 'droga', 'entorpecente', 'flagrante', 'suspeito',
+                    'vítima', 'vitima', 'acidente', 'atropelamento', 'morte', 'ferido', 'nunes',
+                    'ricardo nunes', 'prefeitura'
+                ];
+
+                function matchesKeywords(title) {
+                    const titleLower = title.toLowerCase();
+                    return keywords.some(keyword => titleLower.includes(keyword));
+                }
+
+                const results = await Promise.allSettled(
+                    FEEDS.map(feed => fetchRSSFeed(feed.url, feed.name))
+                );
+
+                let allItems = [];
+
+                results.forEach((result, index) => {
+                    const feed = FEEDS[index];
+                    
+                    if (result.status === 'fulfilled') {
+                        const items = result.value
+                            .filter(item => isRecent(item.pubDate))
+                            .filter(item => matchesKeywords(item.title));
+                        
+                        items.forEach(item => {
+                            if (!isDuplicate(item, allItems)) {
+                                allItems.push(item);
+                            }
+                        });
+                        
+                        debugLog(`${feed.name}: ${items.length} notícias (${allItems.length} total sem duplicatas)`);
+                    } else {
+                        debugLog(`⚠️ ${feed.name} falhou: ${result.reason?.message}`);
+                    }
+                });
+
+                newsItems = [];
+                const itemsBySource = {};
+                
+                FEEDS.forEach(feed => {
+                    itemsBySource[feed.name] = allItems
+                        .filter(item => item.source === feed.name)
+                        .slice(0, feed.limit);
+                });
+
+                Object.values(itemsBySource).forEach(items => {
+                    newsItems.push(...items);
+                });
+
+                newsItems.sort((a, b) => {
+                    if (a.isGCM && !b.isGCM) return -1;
+                    if (!a.isGCM && b.isGCM) return 1;
+                    if (a.isAlert && !b.isAlert) return -1;
+                    if (!a.isAlert && b.isAlert) return 1;
+                    return b.timestamp - a.timestamp;
+                });
+
+                newsItems = newsItems.slice(0, 50);
+
+                const gcmCount = newsItems.filter(n => n.isGCM).length;
+                const alertCount = newsItems.filter(n => n.isAlert).length;
+                
+                debugLog(`Total: ${newsItems.length} notícias (GCM: ${gcmCount}, Alertas: ${alertCount})`);
+
+                if (newsItems.length === 0) {
+                    throw new Error('Nenhuma notícia encontrada nos últimos 2 dias');
+                }
+
+                updateLastUpdate();
+                renderCarousel();
+                startCarousel();
+                
+                setTimeout(() => {
+                    document.getElementById('debugInfo').style.display = 'none';
+                }, 5000);
+                
+            } catch (error) {
+                debugLog('ERRO: ' + error.message);
+                console.error('Erro detalhado:', error);
+                document.getElementById('carouselContainer').innerHTML = 
+                    `<div class="error-message">Erro ao carregar notícias: ${error.message}<br>Tentando novamente em 10 segundos...</div>`;
+                setTimeout(fetchNews, 10000);
+            }
+        }
+
+        function cleanText(text) {
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent || div.innerText || '';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                
+                if (diffMins < 60) {
+                    return `${diffMins} min atrás`;
+                } else if (diffHours < 24) {
+                    return `${diffHours}h atrás`;
+                } else {
+                    const days = Math.floor(diffHours / 24);
+                    return `${days} dia${days > 1 ? 's' : ''} atrás`;
+                }
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function renderCarousel() {
+            const container = document.getElementById('carouselContainer');
+            container.innerHTML = newsItems.map((news, index) => `
+                <div class="news-card ${index === 0 ? 'active' : ''} ${news.isGCM ? 'gcm-highlight' : ''} ${news.isAlert ? 'alert-news' : ''}" data-index="${index}">
+                    <div class="category-header">
+                        <div class="news-category">
+                            ${news.category}
+                            ${news.isGCM ? '<span class="gcm-badge">⭐ GCM</span>' : ''}
+                            ${news.isAlert ? '<span class="alert-badge">🔴 AGORA</span>' : ''}
+                        </div>
+                    </div>
+                    <h2 class="news-title" onclick="window.open('${news.link}', '_blank')">${news.title}</h2>
+                    <div class="news-meta">
+                        <span class="news-source">${news.source}</span>
+                        <span>${formatDate(news.pubDate)}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('newsCounter').textContent = 
+                `${currentIndex + 1} / ${newsItems.length}`;
+        }
+
+        function showSlide(index) {
+            const cards = document.querySelectorAll('.news-card');
+            cards.forEach(card => card.classList.remove('active'));
+            
+            if (cards[index]) {
+                cards[index].classList.add('active');
+                currentIndex = index;
+                document.getElementById('newsCounter').textContent = 
+                    `${currentIndex + 1} / ${newsItems.length}`;
+            }
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % newsItems.length;
+            showSlide(currentIndex);
+        }
+
+        function startCarousel() {
+            if (slideInterval) clearInterval(slideInterval);
+            if (progressInterval) clearInterval(progressInterval);
+
+            slideInterval = setInterval(nextSlide, SLIDE_DURATION);
+
+            let progress = 0;
+            const progressBar = document.getElementById('progressBar');
+            progressInterval = setInterval(() => {
+                progress += 100 / (SLIDE_DURATION / 100);
+                if (progress >= 100) {
+                    progress = 0;
+                }
+                progressBar.style.width = progress + '%';
+            }, 100);
+        }
+
+        function updateLastUpdate() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            document.getElementById('lastUpdate').textContent = 
+                `Última atualização: ${timeString}`;
+        }
+
+        fetchNews();
+        setInterval(fetchNews, UPDATE_INTERVAL);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+                startCarousel();
+            } else if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
+                showSlide(currentIndex);
+                startCarousel();
+            }
+        });
+    </script>
+</body>
+</html>
