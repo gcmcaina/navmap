@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interativo - Final</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --retry-color: #e67e22;
+            --skip-color: #95a5a6; /* Cinza suave */
+            --eliminated-color: #aaa;
+            --text-color: #333;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        /* CABEÇALHO REESTRUTURADO */
+        header {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+            display: flex;
+            justify-content: space-between; /* Separa Contador e Pular */
+            align-items: center;
+            height: 30px; /* Altura fixa para evitar pulos */
+        }
+
+        .question-counter {
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+
+        /* ESTILO SUTIL DO BOTÃO PULAR */
+        .skip-btn {
+            background: none;
+            border: none;
+            color: var(--skip-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+            padding: 5px 10px;
+            display: none; /* Controlado via JS */
+        }
+
+        .skip-btn:hover {
+            color: #555;
+            text-decoration: underline;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            padding-left: 10px;
+        }
+
+        .option {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            margin-left: 35px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .elimination-toggle {
+            position: absolute;
+            left: -35px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px; 
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--error-color);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, background 0.2s;
+            background: transparent;
+            border-radius: 50%;
+        }
+
+        .option:hover:not(.disabled) .elimination-toggle { opacity: 1; }
+        .elimination-toggle:hover { background-color: #ffeaea; }
+        .option:hover:not(.disabled) { border-color: var(--primary-color); }
+        .option.disabled { cursor: default; pointer-events: none; }
+
+        .option.eliminated {
+            background-color: #f0f0f0;
+            color: var(--eliminated-color);
+            border-color: #ddd;
+            text-decoration: line-through;
+            pointer-events: none; 
+        }
+        
+        .option.eliminated .elimination-toggle {
+            color: var(--primary-color);
+            opacity: 1;
+            pointer-events: all;
+            left: -35px;
+        }
+
+        .option.correct {
+            border-color: var(--success-color);
+            background-color: #e8f8f0;
+            color: #155724;
+            text-decoration: none !important;
+            opacity: 1;
+        }
+
+        .option.incorrect {
+            border-color: var(--error-color);
+            background-color: #fde8e8;
+            color: #721c24;
+        }
+
+        .feedback-msg { display: block; font-size: 0.85rem; margin-top: 5px; font-weight: bold; }
+        .icon { float: right; font-weight: bold; }
+
+        .hint-section { margin-top: 1rem; }
+        .hint-toggle { background: none; border: none; color: var(--primary-color); cursor: pointer; text-decoration: underline; font-size: 0.9rem; padding: 0; }
+        .hint-content { display: none; margin-top: 5px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 0.9rem; color: #856404; }
+
+        .explanation-box { margin-top: 1.5rem; padding: 1rem; border-radius: 8px; background-color: #e2e3e5; display: none; }
+        .explanation-box h4 { margin-top: 0; margin-bottom: 0.5rem; }
+
+        .next-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 1.5rem;
+            display: none;
+        }
+        .next-btn:hover { background-color: #2980b9; }
+
+        #result-screen { text-align: center; display: none; }
+        .score-circle { font-size: 3rem; font-weight: bold; color: var(--primary-color); margin: 2rem 0; }
+        
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .retry-btn { background-color: var(--retry-color); color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem; width: 100%; }
+        .retry-btn:hover { background-color: #d35400; }
+        .restart-btn { background-color: #95a5a6; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem; width: 100%; }
+        .restart-btn:hover { background-color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="quiz-screen">
+            <header>
+                <span id="question-counter" class="question-counter">Carregando...</span>
+                <button class="skip-btn" id="skip-btn" onclick="skipQuestion()">Pular ⏭</button>
+            </header>
+            
+            <div id="question-container">
+                <div class="question-text" id="question-text"></div>
+                
+                <ul class="options-list" id="options-list"></ul>
+
+                <div class="hint-section">
+                    <button class="hint-toggle" onclick="toggleHint()">💡 Dica</button>
+                    <div class="hint-content" id="hint-text"></div>
+                </div>
+
+                <div class="explanation-box" id="explanation-box">
+                    <h4>Explicação:</h4>
+                    <p id="explanation-text"></p>
+                </div>
+            </div>
+
+            <button class="next-btn" id="next-btn" onclick="nextQuestion()">Avançar ➜</button>
+        </div>
+
+        <div id="result-screen">
+            <h2>Quiz Finalizado!</h2>
+            <div class="score-circle" id="final-score">0%</div>
+            <p id="result-summary"></p>
+            
+            <div class="btn-group">
+                <button class="retry-btn" id="retry-btn" onclick="retryWrongAnswers()" style="display:none">
+                    ↺ Refazer Erradas
+                </button>
+                <button class="restart-btn" onclick="location.reload()">
+                    Reiniciar Tudo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DADOS ---
+        const MASTER_DATA = [
+    {
+        question: "Qual é o Regulamento Brasileiro da Aviação Civil Especial que rege os requisitos gerais para Aeronaves Remotamente Pilotadas (RPAS) de uso civil?",
+        options: ["RBAC-E 94", "ICA 100-40", "MCA 56-2", "Lei 7.565"],
+        correct: 0,
+        hint: "É uma norma emitida pela ANAC.",
+        explanation: "O RBAC-E nº 94 da ANAC é a regulamentação principal que trata dos requisitos gerais de competência para aeronaves não tripuladas de uso civil."
+    },
+    {
+        question: "Qual órgão é responsável pelo controle e acesso ao Espaço Aéreo Brasileiro?",
+        options: ["ANAC", "DECEA", "ANATEL", "MAPFRE"],
+        correct: 1,
+        hint: "É um departamento ligado à Força Aérea Brasileira.",
+        explanation: "O DECEA (Departamento de Controle do Espaço Aéreo) é responsável por regulamentar o acesso ao espaço aéreo, conforme a ICA 100-40."
+    },
+    {
+        question: "Qual documento certifica a homologação do equipamento de radiofrequência (controle e drone) no Brasil?",
+        options: ["Certificado de Matrícula (ANAC)", "Seguro RETA", "Certificado de Homologação da ANATEL", "Licença de Piloto"],
+        correct: 2,
+        hint: "Agência Nacional de Telecomunicações.",
+        explanation: "A ANATEL é responsável pela homologação de equipamentos que emitem radiofrequência, e o selo deve estar afixado no equipamento."
+    },
+    {
+        question: "De acordo com a classificação de RPAS no RBAC-E 94, qual é o peso máximo de decolagem (PMD) para a Classe 3?",
+        options: ["Até 250g", "Menor ou igual a 25 kg", "Entre 25 kg e 150 kg", "Acima de 150 kg"],
+        correct: 1,
+        hint: "Esta é a classe mais comum para drones comerciais leves.",
+        explanation: "A Classe 3 engloba aeronaves com Peso Máximo de Decolagem (PMD) menor ou igual a 25 kg."
+    },
+    {
+        question: "Qual é a idade mínima exigida para atuar como Piloto Remoto de um drone não recreativo?",
+        options: ["16 anos", "18 anos", "21 anos", "Não há idade mínima"],
+        correct: 1,
+        hint: "Corresponde à maioridade civil no Brasil.",
+        explanation: "Conforme os requisitos para piloto e observador listados no documento, é necessário ser maior de 18 anos."
+    },
+    {
+        question: "O que é o Seguro RETA, obrigatório para operações não recreativas (e recreativas acima de 250g)?",
+        options: ["Seguro contra roubo do equipamento", "Seguro de Responsabilidade do Explorador e Transportador Aéreo", "Seguro de vida do piloto", "Seguro de garantia estendida"],
+        correct: 1,
+        hint: "Cobre danos a terceiros.",
+        explanation: "O Seguro RETA é obrigatório para cobrir danos a terceiros na superfície, conforme exigido para voos não recreativos e drones acima de 250g."
+    },
+    {
+        question: "É permitida a 'operação autônoma' de aeronaves não tripuladas segundo a regulamentação atual?",
+        options: ["Sim, em qualquer situação", "Sim, apenas para órgãos públicos", "Não, é proibida", "Sim, se o drone tiver IA"],
+        correct: 2,
+        hint: "Autônomo é diferente de automatizado. Autônomo não permite intervenção do piloto.",
+        explanation: "Conforme as regras gerais de operação do RBAC-E 94 citadas no documento, é expressamente proibida a operação autônoma de aeronaves não tripuladas."
+    },
+    {
+        question: "O que significa a sigla VLOS?",
+        options: ["Visual Line of Sight (Operação em Linha de Visada Visual)", "Very Low Operation System", "Virtual Landing Operation System", "Visual Light on Sky"],
+        correct: 0,
+        hint: "Refere-se a ver o drone a olho nu.",
+        explanation: "VLOS significa que o piloto mantém contato visual direto com a aeronave, sem auxílio de lentes (exceto corretivas) ou outros equipamentos."
+    },
+    {
+        question: "Qual sistema do DECEA é utilizado para solicitar acesso ao espaço aéreo por aeronaves não tripuladas?",
+        options: ["SISANT", "SARPAS", "SIGMA", "SISFRON"],
+        correct: 1,
+        hint: "Sistema de Solicitação de Acesso de Aeronaves Remotamente Pilotadas.",
+        explanation: "O SARPAS é o sistema desenvolvido pelo DECEA para facilitar a solicitação de acesso ao espaço aéreo."
+    },
+    {
+        question: "Segundo a ICA 100-40, qual a distância mínima de um Heliponto para um voo de até 100 pés (aproximadamente 30 metros) de altura?",
+        options: ["500 metros", "1130 metros", "1740 metros", "2350 metros"],
+        correct: 1,
+        hint: "Verifique a tabela de distâncias para operações na ZAD ou entorno.",
+        explanation: "Para operações até 100 pés de altura, a distância mínima de helipontos cadastrados é de 1.130 metros."
+    },
+    {
+        question: "Quem é o 'Piloto em Comando'?",
+        options: ["Apenas quem segura o controle remoto", "O proprietário do drone, mesmo que não saiba voar", "O piloto responsável pela operação e segurança do voo", "O observador auxiliar"],
+        correct: 2,
+        hint: "Ele tem a autoridade final sobre a operação.",
+        explanation: "O Piloto em Comando é o responsável pela operação e segurança do voo, ou seja, é a pessoa que possui a autoridade final e a responsabilidade total pela operação e segurança do voo."
+    },
+    {
+        question: "Qual documento da Aeronáutica (DECEA) regula o acesso de drones ao espaço aéreo?",
+        options: ["RBAC-E 94", "ICA 100-40", "Lei do Aeronauta", "Código Penal"],
+        correct: 1,
+        hint: "Instrução do Comando da Aeronáutica.",
+        explanation: "A ICA 100-40 regulamenta os procedimentos e responsabilidades para o acesso seguro ao Espaço Aéreo Brasileiro por RPAS."
+    },
+    {
+        question: "Para voos recreativos (aeromodelismo), qual norma específica do DECEA deve ser seguida?",
+        options: ["MCA 56-2", "MCA 56-5", "ICA 100-40 apenas", "RBAC 121"],
+        correct: 0,
+        hint: "Manual do Comando da Aeronáutica para uso recreativo.",
+        explanation: "O MCA 56-2 trata especificamente de aeronaves não tripuladas para uso recreativo (aeromodelos)."
+    },
+    {
+        question: "O que caracteriza uma operação BVLOS?",
+        options: ["Operação noturna", "Operação Além da Linha de Visada Visual", "Operação com observadores", "Operação acima de 400 pés"],
+        correct: 1,
+        hint: "Beyond Visual Line of Sight.",
+        explanation: "BVLOS (Beyond Visual Line of Sight) é o tipo de operação onde o piloto não consegue manter a aeronave dentro do seu alcance visual direto."
+    },
+    {
+        question: "Qual é a responsabilidade do Observador de RPA?",
+        options: ["Pilotar o drone em caso de emergência", "Apenas tirar fotos", "Auxiliar o piloto na condução segura do voo mantendo contato visual com a aeronave", "Controlar a bateria"],
+        correct: 2,
+        hint: "Ele é os 'olhos' do piloto quando necessário.",
+        explanation: "O Observador de RPA auxilia o piloto remoto na condução segura do voo através da observação visual da aeronave, mantendo comunicação permanente."
+    },
+    {
+        question: "Qual a altura máxima permitida para voos de drones (Classe 3) sem necessidade de autorizações especiais de espaço aéreo segregado?",
+        options: ["120 metros (400 pés)", "50 metros", "500 metros", "1000 pés"],
+        correct: 0,
+        hint: "Equivale a aproximadamente um prédio de 40 andares.",
+        explanation: "A regra geral para operações padrão (VFR) permite voos até 400 pés (aproximadamente 120 metros) de altura AGL (Above Ground Level)."
+    },
+    {
+        question: "É permitido o transporte de pessoas em drones (Classe 3 padrão)?",
+        options: ["Sim, se o drone aguentar o peso", "Não, é proibido", "Sim, em áreas rurais", "Sim, com autorização do corpo de bombeiros"],
+        correct: 1,
+        hint: "Regra de segurança básica do RBAC-E 94.",
+        explanation: "É proibido o transporte de pessoas, animais e produtos perigosos em aeronaves não tripuladas, salvo exceções regulamentadas especificamente."
+    },
+    {
+        question: "Qual órgão é responsável pela investigação de acidentes aeronáuticos envolvendo drones?",
+        options: ["Polícia Civil", "CENIPA", "ANATEL", "Guarda Municipal"],
+        correct: 1,
+        hint: "Centro de Investigação e Prevenção de Acidentes Aeronáuticos.",
+        explanation: "O CENIPA é o órgão responsável pela investigação de acidentes e incidentes aeronáuticos no Brasil."
+    },
+    {
+        question: "Qual é a punição prevista no Código Brasileiro de Aeronáutica (CBA) para infrações administrativas?",
+        options: ["Apenas advertência verbal", "Multa, suspensão ou cassação de certificados", "Prisão perpétua", "Serviço comunitário"],
+        correct: 1,
+        hint: "Impacta o bolso e a licença do piloto.",
+        explanation: "O CBA prevê sanções como multa, suspensão ou cassação de certificados, habilitações e autorizações."
+    },
+    {
+        question: "Para operar à noite, além das regras de acesso ao espaço aéreo, o que a aeronave deve possuir?",
+        options: ["Câmera de visão noturna", "Luzes de navegação/colisão conforme a ICA 100-12", "Motor silencioso", "Autorização da prefeitura"],
+        correct: 1,
+        hint: "Necessário para que a aeronave seja vista.",
+        explanation: "O acesso ao espaço aéreo noturno exige o cumprimento do item sobre luzes a serem exibidas pelas aeronaves (ICA 100-12)."
+    },
+    {
+        question: "O que é SISANT?",
+        options: ["Sistema de Análise de Tempo", "Sistema de Aeronaves Não Tripuladas (Cadastro da ANAC)", "Sistema de Segurança Nacional", "Sistema de Navegação Tática"],
+        correct: 1,
+        hint: "Onde você cadastra o drone na ANAC.",
+        explanation: "SISANT é o sistema da ANAC onde é feito o cadastro de aeronaves não tripuladas de uso recreativo ou não recreativo (até 25kg)."
+    },
+    {
+        question: "Qual manual regula as Operações Aéreas Especiais para órgãos públicos (Segurança Pública, Defesa Civil, etc.)?",
+        options: ["MCA 56-2", "MCA 56-5", "RBAC 94", "CTB"],
+        correct: 1,
+        hint: "Diferente do manual recreativo.",
+        explanation: "O MCA 56-5 regulamenta aeronaves não tripuladas para uso exclusivo em operações aéreas especiais e órgãos públicos."
+    },
+    {
+        question: "Em caso de acidente aeronáutico, qual ferramenta deve ser usada para comunicação ao CENIPA?",
+        options: ["Boletim de Ocorrência Policial", "Relatório de Prevenção (RELPREV)", "Email para o fabricante", "Postagem em rede social"],
+        correct: 1,
+        hint: "Ferramenta específica da filosofia SIPAER.",
+        explanation: "O preenchimento do RELPREV (Relatório de Prevenção) é uma das ferramentas mais importantes para a comunicação de ocorrências ao CENIPA."
+    },
+    {
+        question: "O cadastro do drone na ANAC (SISANT) é obrigatório para aeronaves com peso acima de:",
+        options: ["100g", "250g", "500g", "1kg"],
+        correct: 1,
+        hint: "Mesmo limite que exige seguro RETA para uso não recreativo.",
+        explanation: "Toda aeronave não tripulada acima de 250 gramas de peso máximo de decolagem deve ser cadastrada na ANAC."
+    },
+    {
+        question: "Qual artigo do Código Penal trata sobre 'Expor a perigo aeronave, própria ou alheia, ou praticar ato tendente a impedir ou dificultar navegação aérea'?",
+        options: ["Art. 121", "Art. 157", "Art. 261", "Art. 33"],
+        correct: 2,
+        hint: "Crime contra a segurança dos meios de transporte.",
+        explanation: "O Art. 261 do Código Penal define como crime a exposição a perigo de aeronave ou atos que dificultem a navegação aérea."
+    },
+    {
+        question: "O que é Avaliação de Risco Operacional (ARO)?",
+        options: ["Uma prova para o piloto", "Um documento que analisa perigos, probabilidade e severidade da operação", "O cálculo de custo do drone", "A previsão do tempo"],
+        correct: 1,
+        hint: "Essencial para a segurança operacional (Safety).",
+        explanation: "A Avaliação de Risco Operacional identifica perigos e analisa os riscos (probabilidade x severidade) para mitigá-los a níveis aceitáveis."
+    },
+    {
+        question: "Segundo a filosofia SIPAER citada na ICA 100-40, qual é a premissa sobre acidentes?",
+        options: ["Acidentes são inevitáveis", "Todo acidente aeronáutico pode ser evitado", "A culpa é sempre do piloto", "Acidentes ocorrem por acaso"],
+        correct: 1,
+        hint: "Princípio básico da prevenção.",
+        explanation: "Um dos princípios da filosofia SIPAER é que 'Todo acidente aeronáutico pode ser evitado'."
+    },
+    {
+        question: "Qual a distância mínima de aeródromos para voos na ZAD (Zona de Aproximação e Decolagem) se a altura for entre 100 e 200 pés?",
+        options: ["1700 m", "2630 m", "3550 m", "4480 m"],
+        correct: 1,
+        hint: "Verifique o quadro-resumo dos parâmetros da ICA 100-40.",
+        explanation: "Conforme a tabela da ICA 100-40, para voos entre 100 ft e 200 ft na ZAD, a distância mínima é de 2.630 metros."
+    },
+    {
+        question: "Quem responde pelos danos a terceiros na superfície causados por uma aeronave em voo?",
+        options: ["O fabricante", "A ANAC", "O operador", "O vendedor da loja"],
+        correct: 2,
+        hint: "Baseado no Código Brasileiro de Aeronáutica.",
+        explanation: "O Art. 268 do CBA define que o explorador (Operador) responde pelos danos a terceiros na superfície causados por aeronave em voo."
+    },
+	{
+        question: "O que define uma 'Aeronave Não Tripulada Autônoma' segundo a regulamentação?",
+        options: ["Aeronave que permite intervenção do piloto a qualquer momento", "Aeronave que não permite intervenção do piloto na condução do voo", "Aeronave que voa apenas em linha reta", "Aeronave controlada por inteligência artificial com supervisão"],
+        correct: 1,
+        hint: "A palavra-chave é a impossibilidade de intervenção humana.",
+        explanation: "Conforme as definições da ICA 100-40, a principal característica que a diferencia de uma Aeronave Remotamente Pilotada (RPA) é a ausência de controle em tempo real por um piloto remoto."
+    },
+    {
+        question: "Qual é a definição de 'Carga Útil' (Payload) em um RPAS?",
+        options: ["Baterias e motores", "Elementos da aeronave não necessários para o voo, mas carregados para a missão (ex: câmera)", "O peso total da aeronave", "O combustível extra"],
+        correct: 1,
+        hint: "É o que o drone 'carrega' para realizar o trabalho.",
+        explanation: "Carga Útil (Payload) são todos os elementos da aeronave não necessários para o voo e pilotagem, mas carregados para cumprir objetivos de uma missão específica."
+    },
+    {
+        question: "Segundo o RBAC-E 94, aeronaves Classe 1 possuem Peso Máximo de Decolagem (PMD) de:",
+        options: ["Mais de 150 kg", "Entre 25 kg e 150 kg", "Menos de 25 kg", "Menos de 250 g"],
+        correct: 0,
+        hint: "São os maiores drones regulamentados.",
+        explanation: "A Classe 1 engloba aeronaves com PMD maior que 150 kg."
+    },
+    {
+        question: "Segundo o RBAC-E 94, aeronaves Classe 2 possuem Peso Máximo de Decolagem (PMD) de:",
+        options: ["Mais de 150 kg", "Mais de 25 kg e até 150 kg", "Até 25 kg", "Até 500 g"],
+        correct: 1,
+        hint: "Classe intermediária.",
+        explanation: "A Classe 2 engloba aeronaves com PMD maior que 25 kg e menor ou igual a 150 kg."
+    },
+    {
+        question: "Para operar drones da Classe 1 ou 2, qual documento médico é exigido do piloto?",
+        options: ["Atestado de saúde ocupacional", "Certificado Médico Aeronáutico (CMA)", "Carteira de vacinação", "Exame de vista simples"],
+        correct: 1,
+        hint: "O mesmo tipo de certificado exigido para pilotos da aviação tripulada.",
+        explanation: "Pilotos de RPA Classe 1 ou 2 devem possuir Certificado Médico Aeronáutico (CMA) de 1ª, 2ª ou 5ª Classe válido."
+    },
+    {
+        question: "Um piloto remoto pode operar quantos RPAS simultaneamente?",
+        options: ["Até 3 drones", "Apenas um único RPAS por vez", "Quantos conseguir controlar", "Dois, se forem do mesmo modelo"],
+        correct: 1,
+        hint: "Regra de segurança para manter a atenção.",
+        explanation: "Conforme as regras gerais de operação (RBAC-E 94), um piloto remoto somente pode operar um único RPAS por vez."
+    },
+    {
+        question: "O que é 'EVLOS'?",
+        options: ["Operação Noturna", "Extended Visual Line of Sight (Operação com auxílio de observadores)", "Operação totalmente autônoma", "Operação acima das nuvens"],
+        correct: 1,
+        hint: "O piloto não vê o drone, mas alguém vê.",
+        explanation: "EVLOS refere-se à situação onde o Piloto Remoto não mantém contato visual direto, necessitando do auxílio de Observadores de RPA."
+    },
+    {
+        question: "Qual a função dos Órgãos Regionais do DECEA (como CINDACTA e SRPV)?",
+        options: ["Vender drones", "Fabricar peças de reposição", "Gerenciar e controlar o espaço aéreo em suas respectivas jurisdições", "Fiscalizar o peso dos drones"],
+        correct: 2,
+        hint: "Eles autorizam os voos na prática.",
+        explanation: "Os Órgãos Regionais (CINDACTAs e SRPV) são responsáveis por coordenar ações de gerenciamento e controle do espaço aéreo em suas áreas de jurisdição."
+    },
+    {
+        question: "O que significa a sigla NOTAM?",
+        options: ["Notice to Airman (Informação ao Piloto)", "No Time Available", "New Operation Tactics", "National Organization of Traffic"],
+        correct: 0,
+        hint: "Aviso importante sobre condições do espaço aéreo.",
+        explanation: "NOTAM é um aviso que contém informação relativa ao estabelecimento, condição ou modificação de qualquer instalação aeronáutica, perigo ou serviço."
+    },
+    {
+        question: "Qual artigo do Código Penal Brasileiro trata sobre 'Expor a vida ou a saúde de outrem a perigo direto e iminente'?",
+        options: ["Art. 121", "Art. 132", "Art. 155", "Art. 33"],
+        correct: 1,
+        hint: "Crime de perigo para a vida.",
+        explanation: "O Art. 132 do Código Penal pune quem expõe a vida ou a saúde de outrem a perigo direto e iminente."
+    },
+    {
+        question: "Qual artigo da Lei das Contravenções Penais trata sobre 'Dirigir aeronave sem estar devidamente licenciado'?",
+        options: ["Art. 33", "Art. 35", "Art. 28", "Art. 10"],
+        correct: 0,
+        hint: "Refere-se à falta de licença ou habilitação.",
+        explanation: "O Art. 33 do Decreto Lei nº 3.688 trata da contravenção de dirigir aeronave sem estar devidamente licenciado."
+    },
+    {
+        question: "Conforme o CBA (Art. 303), em qual situação uma aeronave pode ser detida por autoridades?",
+        options: ["Se o piloto estiver sem uniforme", "Se voar no espaço aéreo brasileiro com infração das autorizações", "Se a bateria estiver fraca", "Se o drone for Azul"],
+        correct: 1,
+        hint: "Violação de regras de tráfego e autorizações.",
+        explanation: "O Art. 303 do CBA permite a detenção da aeronave se voar com infração das convenções, atos internacionais ou autorizações."
+    },
+    {
+        question: "Para operações no ENTORNO de aeródromos, qual a distância mínima para voos até 100 pés?",
+        options: ["500 m", "1130 m", "1740 m", "2350 m"],
+        correct: 1,
+        hint: "Distância menor que na ZAD.",
+        explanation: "No entorno de aeródromos, para voos até 100 ft, a distância mínima é de 1.130 metros."
+    },
+    {
+        question: "Para operações no ENTORNO de aeródromos, qual a distância mínima para voos entre 300 e 400 pés?",
+        options: ["1740 m", "2350 m", "2960 m", "3550 m"],
+        correct: 2,
+        hint: "Quase 3 km.",
+        explanation: "No entorno de aeródromos, para voos entre 300 ft e 400 ft, a distância mínima é de 2.960 metros."
+    },
+    {
+        question: "Qual a velocidade máxima permitida para drones voando perto de aeródromos em alturas até 100 pés, segundo as regras específicas da ICA 100-40?",
+        options: ["30 Kt (aprox. 60 km/h)", "60 Kt (aprox. 120 km/h)", "100 km/h", "Sem limite"],
+        correct: 0,
+        hint: "Velocidade reduzida para menor altura.",
+        explanation: "Para operações até 100 ft próximas a aeródromos, a velocidade deve ser igual ou inferior a 30 Kt (aprox. 60 km/h)."
+    },
+    {
+        question: "É permitido o consumo de bebidas alcoólicas ou substâncias psicoativas antes de operar um drone?",
+        options: ["Sim, em pequena quantidade", "Não, as regras são as mesmas da aviação tripulada", "Sim, se for voo recreativo", "Não há regulamentação sobre isso"],
+        correct: 1,
+        hint: "Regra de ouro da segurança operacional.",
+        explanation: "O piloto não pode operar sob influência de álcool ou drogas, aplicando-se as mesmas restrições de segurança da aviação tripulada."
+    },
+    {
+        question: "Quem tem prioridade de passagem no espaço aéreo?",
+        options: ["Drones da polícia", "Drones de entrega", "Aeronaves tripuladas", "Quem estiver mais rápido"],
+        correct: 2,
+        hint: "Vidas humanas a bordo têm prioridade.",
+        explanation: "Aeronaves tripuladas sempre têm prioridade sobre aeronaves não tripuladas. O drone deve ceder passagem imediatamente."
+    },
+    {
+        question: "O que deve ser feito se uma aeronave tripulada se aproximar da área de operação do drone?",
+        options: ["Subir o drone para ver melhor", "Pousar imediatamente ou ceder passagem de forma segura", "Manter a posição", "Acenar com o drone"],
+        correct: 1,
+        hint: "Evitar colisão a todo custo.",
+        explanation: "Toda operação de UA deve ser imediatamente encerrada ou ajustada para ceder passagem ao verificar a aproximação de aeronaves tripuladas."
+    },
+    {
+        question: "O que é 'Aeronave Orgânica' no contexto de operações públicas (MCA 56-5)?",
+        options: ["Drone feito de material biodegradável", "Aeronave pertencente ou operada diretamente pela instituição pública (ex: Guarda Civil)", "Aeronave alugada", "Drone de brinquedo"],
+        correct: 1,
+        hint: "Faz parte do 'órgão' público.",
+        explanation: "Aeronave orgânica é aquela que pertence ao acervo patrimonial ou está sob responsabilidade direta da instituição pública (Órgão Especial)."
+    },
+    {
+        question: "Em uma Avaliação de Risco Operacional (IS E94-003), o que significa 'Severidade'?",
+        options: ["A frequência do evento", "O grau da consequência de um evento (ex: morte, ferimento)", "A dificuldade de pilotar", "O custo do drone"],
+        correct: 1,
+        hint: "O quão ruim seria se algo desse errado.",
+        explanation: "Severidade significa o grau da consequência de um evento inseguro, variando de insignificante (danos materiais) a catastrófico (mortes)."
+    },
+    {
+        question: "Na matriz de risco, o Nível A de Severidade corresponde a:",
+        options: ["Insignificante", "Pequeno", "Crítico", "Catastrófico (morte de múltiplas pessoas)"],
+        correct: 3,
+        hint: "O pior cenário possível.",
+        explanation: "Nível A é classificado como Catastrófico, implicando na morte de múltiplas pessoas."
+    },
+    {
+        question: "Na matriz de risco, o que deve ser feito se o risco for classificado como 'Extremo'?",
+        options: ["Continuar com cuidado", "A operação não deve ocorrer ou deve cessar imediatamente", "Pedir autorização verbal", "Voar mais baixo"],
+        correct: 1,
+        hint: "Risco inaceitável.",
+        explanation: "Para Risco Extremo, a operação não deve ocorrer até que medidas mitigadoras reduzam o risco para um nível aceitável."
+    },
+    {
+        question: "Qual a finalidade do 'Log Book' ou registro de voos?",
+        options: ["Guardar recordações", "Cumprir exigência da ANAC e permitir investigação em caso de incidentes", "Apenas para controle de bateria", "Mostrar para amigos"],
+        correct: 1,
+        hint: "Documento oficial do piloto e da aeronave.",
+        explanation: "O operador deve manter registros de todos os voos (Log Book) em formato aceitável pela ANAC, essencial também para investigações."
+    },
+    {
+        question: "O que é proibido transportar em drones segundo as Regras Gerais de Operação?",
+        options: ["Câmeras", "Sensores", "Animais, pessoas e produtos perigosos", "Encomendas leves"],
+        correct: 2,
+        hint: "A menos que haja autorização especial, é vedado.",
+        explanation: "É proibido o transporte de pessoas, animais e produtos perigosos em RPAS."
+    },
+    {
+        question: "Quem é responsável por assegurar que o drone possui o selo da ANATEL?",
+        options: ["O fabricante e o proprietário/operador", "Apenas a loja", "A ANAC", "O DECEA"],
+        correct: 0,
+        hint: "Equipamento não homologado é ilegal.",
+        explanation: "O selo da ANATEL deve estar afixado no equipamento (transmissor e aeronave) e é responsabilidade do operador garantir a homologação."
+    },
+    {
+        question: "Qual o papel do 'Explorador' (Operador) no gerenciamento de segurança?",
+        options: ["Nenhum, apenas o piloto importa", "Responsável final pela condução segura, manutenção e treinamento da equipe", "Apenas comprar o drone", "Apenas pagar o seguro"],
+        correct: 1,
+        hint: "É o 'dono' da operação.",
+        explanation: "O Explorador é responsável pelo gerenciamento de pessoal, manutenção, documentação e pela segurança operacional de todo o sistema RPAS."
+    },
+    {
+        question: "O acesso ao espaço aéreo para Órgãos de Segurança Pública (MCA 56-5) tem qual característica?",
+        options: ["É proibido", "Segue regras especiais para apoio a situações emergenciais", "É igual ao recreativo", "Não precisa de cadastro"],
+        correct: 1,
+        hint: "Prioridade para salvar vidas ou segurança.",
+        explanation: "O MCA 56-5 regulamenta o acesso para órgãos de segurança e defesa civil em situações emergenciais e operações especiais."
+    },
+    {
+        question: "O que é 'Probabilidade' na Avaliação de Risco?",
+        options: ["O tamanho do drone", "A frequência com que um evento perigoso pode ocorrer", "A certeza de sucesso", "O tempo de voo"],
+        correct: 1,
+        hint: "Níveis de 1 (Muito improvável) a 5 (Frequente).",
+        explanation: "Probabilidade é a frequência estatística ou estimada com que um evento de perigo pode vir a acontecer."
+    },
+    {
+        question: "O cadastro no SARPAS como 'Instituição Prestadora de Serviços Essenciais' permite:",
+        options: ["Voar sem limites", "Operações sob as regras do MCA 56-5 (Emergenciais)", "Desconto na compra de drones", "Isenção de seguro"],
+        correct: 1,
+        hint: "Habilita o perfil de Órgão Público/Especial.",
+        explanation: "O cadastro institucional no SARPAS permite que o órgão opere sob as prerrogativas do MCA 56-5 para missões emergenciais."
+    },
+    {
+        question: "Qual o limite de altura para voos VLOS sem necessidade de autorização para espaço aéreo segregado (regra geral)?",
+        options: ["120 metros (400 pés)", "500 metros", "100 metros", "50 metros"],
+        correct: 0,
+        hint: "Altura padrão internacional.",
+        explanation: "A altura máxima permitida para operações padrão VLOS é de 400 pés (aproximadamente 120 metros) acima do nível do solo."
+    },
+    {
+        question: "A fiscalização das operações de drones pode ser realizada por:",
+        options: ["Apenas ANAC", "Apenas DECEA", "Apenas Polícia", "ANAC, DECEA, ANATEL e Forças de Segurança Pública"],
+        correct: 3,
+        hint: "Cada um fiscaliza sua área (espaço aéreo, documentos, rádio, penal).",
+        explanation: "A fiscalização é conjunta: ANAC (normas civis), DECEA (espaço aéreo), ANATEL (radiofrequência) e Polícia (segurança pública/penal)."
+    },
+    {
+        question: "O que deve ser feito antes de iniciar qualquer voo (Pré-voo)?",
+        options: ["Apenas ligar o drone", "Tomar ciência de todas as informações necessárias e planejar o voo", "Postar foto na rede social", "Não precisa fazer nada"],
+        correct: 1,
+        hint: "Planejamento é essencial.",
+        explanation: "O piloto remoto deve tomar ciência de todas as informações necessárias ao planejamento do voo antes da decolagem."
+    },
+    {
+        question: "Em caso de perda de link (C2 Link) durante o voo, o que o drone deve fazer?",
+        options: ["Cair imediatamente", "Executar o procedimento de 'Return to Home' ou pouso de segurança configurado", "Ficar parado até acabar a bateria", "Voar para cima"],
+        correct: 1,
+        hint: "Configuração de Fail-Safe.",
+        explanation: "Sistemas RPAS devem ter procedimentos de contingência, como o retorno automático (RTH), em caso de perda de comando e controle."
+    },
+	{
+        question: "Qual a validade do cadastro de aeronave não tripulada na ANAC (Certidão de Cadastro)?",
+        options: ["1 ano", "2 anos", "Indeterminada", "5 anos"],
+        correct: 1,
+        hint: "Precisa renovar periodicamente no SISANT.",
+        explanation: "A certidão de cadastro emitida pelo SISANT é válida por 2 anos, podendo ser renovada."
+    },
+    {
+        question: "O seguro RETA cobre danos ao próprio drone?",
+        options: ["Sim, cobre tudo", "Não, cobre apenas danos a terceiros no solo", "Sim, se cair na água", "Sim, se for roubado"],
+        correct: 1,
+        hint: "É um seguro de Responsabilidade Civil.",
+        explanation: "O Seguro RETA é obrigatório para danos a terceiros na superfície. Danos ao próprio equipamento (casco) requerem outro tipo de seguro opcional."
+    },
+    {
+        question: "O que é 'Área Distante de Terceiros'?",
+        options: ["Qualquer lugar fora de casa", "Área onde o piloto garante que não há pessoas não envolvidas na operação num raio de segurança", "Área urbana", "Aeroporto"],
+        correct: 1,
+        hint: "Conceito chave para aeromodelismo e operações básicas.",
+        explanation: "Refere-se a áreas onde a operação pode ser conduzida sem colocar em risco pessoas não envolvidas (terceiros)."
+    },
+    {
+        question: "Operações 'Atípicas' (ex: Sobrevoar Manifestações) exigem:",
+        options: ["Apenas coragem", "Autorização e coordenação especial com o DECEA", "Nenhuma autorização extra", "Apenas seguro"],
+        correct: 1,
+        hint: "Foge do padrão de 1 piloto = 1 drone.",
+        explanation: "Operações com múltiplas aeronaves ou características fora do padrão exigem análise e autorização específica do DECEA."
+    },
+    {
+        question: "Qual o nome do relatório operacional de segurança preenchido após o voo na ficha modelo apresentada no curso?",
+        options: ["Relatório de Missão", "Relatório Operacional", "Diário de Bordo", "Ficha de Ocorrência"],
+        correct: 1,
+        hint: "Está no título do documento na página 12.",
+        explanation: "O documento apresentado como exemplo de registro pós-voo é o 'Relatório Operacional'."
+    },
+    {
+        question: "O que significa a sigla RPA?",
+        options: ["Robot Plane Aviation", "Remotely Piloted Aircraft (Aeronave Remotamente Pilotada)", "Real Pilot Action", "Radio Plane Association"],
+        correct: 1,
+        hint: "Termo técnico oficial.",
+        explanation: "RPA significa Aeronave Remotamente Pilotada, uma subcategoria das aeronaves não tripuladas."
+    },
+    {
+        question: "A operação de aeromodelos (recreativa) acima de 250g é permitida onde?",
+        options: ["Em qualquer lugar", "Somente em áreas distantes de terceiros e autorizadas", "Em cima de multidões", "Perto de aeroportos"],
+        correct: 1,
+        hint: "Regra do RBAC-E 94 para aeromodelos.",
+        explanation: "Aeromodelos > 250g só podem operar em áreas distantes de terceiros, sob total responsabilidade do operador."
+    },
+    {
+        question: "O cidadão pode denunciar operações irregulares de drones?",
+        options: ["Não, é proibido", "Sim, deve encaminhar provas (materialidade e autoria) ao DECEA/Polícia", "Apenas se for o dono do drone", "Apenas anonimamente"],
+        correct: 1,
+        hint: "Incentivo à fiscalização social.",
+        explanation: "Qualquer cidadão pode denunciar irregularidades, preferencialmente fornecendo provas de autoria e materialidade aos órgãos competentes."
+    },
+    {
+        question: "Qual a penalidade administrativa prevista no CBA para quem fornece informações inexatas ou adulteradas?",
+        options: ["Elogio", "Suspensão ou cassação de certificados", "Aumento de salário", "Transferência"],
+        correct: 1,
+        hint: "Artigo 299, inciso V do CBA.",
+        explanation: "O fornecimento de dados inexatos ou adulterados pode levar à suspensão ou cassação de certificados e habilitações."
+    }
+];
+
+        // --- 2. VARIÁVEIS ---
+        let quizData = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let wrongAnswers = [];
+        
+        // DOM
+        const questionTextEl = document.getElementById('question-text');
+        const optionsListEl = document.getElementById('options-list');
+        const hintTextEl = document.getElementById('hint-text');
+        const hintContentEl = document.querySelector('.hint-content');
+        const nextBtn = document.getElementById('next-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationText = document.getElementById('explanation-text');
+        const counterEl = document.getElementById('question-counter');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const retryBtn = document.getElementById('retry-btn');
+
+        // --- 3. LÓGICA ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initQuiz() {
+            quizData = [...MASTER_DATA];
+            shuffleArray(quizData);
+            currentQuestionIndex = 0;
+            score = 0;
+            wrongAnswers = [];
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            resetState();
+            const currentData = quizData[currentQuestionIndex];
+            
+            counterEl.textContent = `Questão ${currentQuestionIndex + 1} de ${quizData.length}`;
+            questionTextEl.textContent = currentData.question;
+            hintTextEl.textContent = currentData.hint;
+
+            const labels = ['A', 'B', 'C', 'D'];
+            currentData.options.forEach((optionText, index) => {
+                const li = document.createElement('li');
+                li.className = 'option';
+                li.dataset.index = index; 
+                li.innerHTML = `
+                    <span class="elimination-toggle" title="Clique para eliminar" onclick="toggleElimination(event, this.parentNode)">x</span>
+                    <strong>${labels[index]})</strong> ${optionText}
+                `;
+                li.onclick = (event) => checkAnswer(index, li);
+                optionsListEl.appendChild(li);
+            });
+
+            // Mostra o botão pular sutilmente no topo, se não for a última
+            if (currentQuestionIndex < quizData.length - 1) {
+                skipBtn.style.display = 'block';
+            } else {
+                skipBtn.style.display = 'none';
+            }
+        }
+
+        function resetState() {
+            nextBtn.style.display = 'none';
+            explanationBox.style.display = 'none';
+            hintContentEl.style.display = 'none';
+            while (optionsListEl.firstChild) {
+                optionsListEl.removeChild(optionsListEl.firstChild);
+            }
+        }
+
+        function skipQuestion() {
+            const skippedQuestion = quizData[currentQuestionIndex];
+            quizData.splice(currentQuestionIndex, 1);
+            quizData.push(skippedQuestion);
+            loadQuestion();
+        }
+
+        function toggleElimination(event, optionElement) {
+            event.stopPropagation(); 
+            if (optionElement.classList.contains('disabled')) return;
+            const toggleSpan = event.currentTarget;
+            if (optionElement.classList.contains('eliminated')) {
+                optionElement.classList.remove('eliminated');
+                toggleSpan.textContent = 'x';
+                toggleSpan.title = 'Clique para eliminar';
+            } else {
+                optionElement.classList.add('eliminated');
+                toggleSpan.textContent = '⟳';
+                toggleSpan.title = 'Clique para restaurar';
+            }
+        }
+
+        function toggleHint() {
+            if (hintContentEl.style.display === 'block') {
+                hintContentEl.style.display = 'none';
+            } else {
+                hintContentEl.style.display = 'block';
+            }
+        }
+
+        function checkAnswer(selectedIndex, selectedElement) {
+            const currentData = quizData[currentQuestionIndex];
+            const options = optionsListEl.children;
+            
+            // Esconde o botão pular
+            skipBtn.style.display = 'none';
+
+            for (let opt of options) {
+                opt.classList.add('disabled');
+            }
+
+            if (selectedIndex === currentData.correct) {
+                score++;
+                selectedElement.classList.add('correct');
+                selectedElement.innerHTML += ` <span class="icon">✔ Correto!</span>`;
+            } else {
+                wrongAnswers.push(currentData); 
+                selectedElement.classList.add('incorrect');
+                selectedElement.innerHTML += ` <div class="feedback-msg"><span style="font-size:1.2em">❌</span> Não era bem isso.</div>`;
+                
+                const correctOption = options[currentData.correct];
+                correctOption.classList.remove('eliminated');
+                const toggle = correctOption.querySelector('.elimination-toggle');
+                if(toggle) toggle.style.display = 'none';
+
+                correctOption.classList.add('correct');
+                correctOption.innerHTML += ` <span class="icon">✔ Esta é a correta</span>`;
+            }
+
+            explanationText.textContent = currentData.explanation;
+            explanationBox.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            
+            const percentage = Math.round((score / quizData.length) * 100);
+            document.getElementById('final-score').textContent = `${percentage}%`;
+            
+            const summary = document.getElementById('result-summary');
+            summary.textContent = `Você acertou ${score} de ${quizData.length} questões.`;
+
+            if (wrongAnswers.length > 0) {
+                retryBtn.style.display = 'block';
+                retryBtn.textContent = `↺ Refazer ${wrongAnswers.length} Erradas`;
+            } else {
+                retryBtn.style.display = 'none';
+                summary.textContent += " Parabéns! Você gabaritou! 🏆";
+            }
+        }
+
+        function retryWrongAnswers() {
+            quizData = [...wrongAnswers];
+            shuffleArray(quizData);
+            wrongAnswers = []; 
+            currentQuestionIndex = 0;
+            score = 0;
+            resultScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            loadQuestion();
+        }
+
+        initQuiz();
+    </script>
+</body>
+</html>
