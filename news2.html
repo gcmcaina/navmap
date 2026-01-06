@@ -277,6 +277,54 @@
             max-height: 400px;
             overflow-y: auto;
         }
+		.manage-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(22, 33, 62, 0.7);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    z-index: 1000;
+    transition: all 0.3s;
+}
+.manage-btn:hover { background: var(--color-accent); color: white; }
+
+/* Painel de notícias para ocultar */
+.news-manager-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-surface);
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid var(--color-accent);
+    z-index: 1001;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+.manager-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid var(--color-border);
+}
+.manager-item button {
+    background: var(--color-alert);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -315,6 +363,38 @@
         let currentIndex = 0;
         let slideInterval;
         let progressInterval;
+
+		// Inicializa a lista de IDs ocultos do localStorage
+let hiddenNews = JSON.parse(localStorage.getItem('hiddenNews') || '[]');
+
+function toggleManager() {
+    const panel = document.getElementById('newsManager');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    if(panel.style.display === 'block') renderManagerList();
+}
+
+function hideNewsItem(newsTitle) {
+    const normalized = normalizeTitle(newsTitle);
+    if (!hiddenNews.includes(normalized)) {
+        hiddenNews.push(normalized);
+        localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
+        
+        // Remove do array atual e atualiza o carrossel
+        newsItems = newsItems.filter(item => normalizeTitle(item.title) !== normalized);
+        renderCarousel();
+        renderManagerList();
+    }
+}
+
+function renderManagerList() {
+    const list = document.getElementById('managerList');
+    list.innerHTML = newsItems.map(item => `
+        <div class="manager-item">
+            <span style="font-size: 0.9rem;">${item.title}</span>
+            <button onclick="hideNewsItem('${item.title.replace(/'/g, "\\'")}')">Ocultar</button>
+        </div>
+    `).join('');
+}
 
         function debugLog(message) {
             const debugDiv = document.getElementById('debugInfo');
@@ -501,8 +581,9 @@
                             .filter(item => matchesKeywords(item.title));
                         
                         items.forEach(item => {
-                            if (!isDuplicate(item, allItems)) {
-                                allItems.push(item);
+							const titleNorm = normalizeTitle(item.title);
+                            if (!hiddenNews.includes(titleNorm) && !isDuplicate(item, allItems)) {
+        						allItems.push(item);
                             }
                         });
                         
@@ -670,5 +751,15 @@
             }
         });
     </script>
+	<button class="manage-btn" onclick="toggleManager()">⚙️ Gerenciar Feed</button>
+
+<div id="newsManager" class="news-manager-panel">
+    <h3>Ocultar Notícias Indesejadas</h3>
+    <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 20px;">
+        Clique em "Ocultar" para remover a notícia do telão imediatamente.
+    </p>
+    <div id="managerList"></div>
+    <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%;">Fechar</button>
+</div>
 </body>
 </html>
