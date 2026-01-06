@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notícias SP - Telão Corporativo</title>
+    <title>Notícias SP</title>
     <style>
         :root {
             --color-background: #1a1a2e;
@@ -12,11 +13,8 @@
             --color-text-secondary: #a0a0a0;
             --color-primary: #0f4c75;
             --color-accent: #3282b8;
-            --color-gcm: #ffd700;
-            --color-gcm-bg: #2a2200;
-            --color-alert: #ff4444;
-            --color-alert-bg: #2a0000;
             --color-border: rgba(255, 255, 255, 0.1);
+            --color-alert: #ff4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -65,16 +63,6 @@
 
         .news-card.active { opacity: 1; transform: translateY(0); }
 
-        .news-card.gcm-highlight {
-            background: linear-gradient(135deg, var(--color-gcm-bg) 0%, var(--color-surface) 100%);
-            border: 2px solid var(--color-gcm);
-        }
-
-        .news-card.alert-news {
-            background: linear-gradient(135deg, var(--color-alert-bg) 0%, var(--color-surface) 100%);
-            border: 2px solid var(--color-alert);
-        }
-
         .news-title {
             font-size: 3.5rem;
             font-weight: 700;
@@ -96,7 +84,7 @@
             width: 0%;
         }
 
-        /* --- Estilos do Painel de Gestão --- */
+        /* Painel de Gestão */
         .manage-btn {
             position: fixed;
             bottom: 20px;
@@ -108,6 +96,7 @@
             border-radius: 5px;
             cursor: pointer;
             z-index: 1000;
+            font-size: 0.8rem;
         }
 
         .news-manager-panel {
@@ -150,9 +139,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
+            padding: 10px;
             border-bottom: 1px solid var(--color-border);
-            gap: 10px;
         }
 
         .manager-item button {
@@ -161,6 +149,7 @@
             border: none;
             cursor: pointer;
             color: white;
+            font-size: 0.7rem;
         }
 
         .btn-hide { background: var(--color-alert); }
@@ -190,13 +179,14 @@
         <h2 style="margin-bottom: 20px;">Painel de Controle</h2>
         
         <div class="custom-news-form">
-            <h4>📢 Adicionar Notícia Fixa</h4>
-            <input type="text" id="customTitle" placeholder="Título da notícia corporativa...">
-            <input type="text" id="customSource" placeholder="Fonte (Ex: RH, Segurança, Comunicado)">
+            <h4>📢 Adicionar Notícia Personalizada</h4>
+            <input type="text" id="customTitle" placeholder="Título da notícia...">
+            <input type="text" id="customSource" placeholder="Fonte (Ex: RH, Segurança)">
+            <input type="text" id="customCategory" placeholder="Categoria (Ex: AVISO, EVENTO, URGENTE)">
             <button onclick="addCustomNews()" style="background: var(--color-accent); color:white; width: 100%; padding: 10px; margin-top: 10px; border:none; border-radius:5px; cursor:pointer;">Publicar no Telão</button>
         </div>
 
-        <h4>Lista de Notícias</h4>
+        <h4>Gestão de Conteúdo</h4>
         <div id="managerList"></div>
         <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%; cursor:pointer;">Fechar</button>
     </div>
@@ -205,8 +195,7 @@
         const FEEDS = [
             { url: 'https://g1.globo.com/dynamo/sp/sao-paulo/rss2.xml', name: 'G1', limit: 15 },
             { url: 'https://news.google.com/rss/search?q=São%20Paulo&hl=pt-BR&gl=BR&ceid=BR%3Apt-419', name: 'Google News', limit: 15 },
-            { url: 'https://rss.uol.com.br/feed/noticias.xml', name: 'UOL', limit: 7 },
-            { url: 'https://www.gazetadopovo.com.br/feed/rss/sao-paulo.xml', name: 'Gazeta - SP', limit: 8 }
+            { url: 'https://rss.uol.com.br/feed/noticias.xml', name: 'UOL', limit: 10 }
         ];
 
         const WORKER_PROXY = 'https://news-fetcher.gcmcaina.workers.dev/?url=';
@@ -216,17 +205,37 @@
         let currentIndex = 0;
         let slideInterval, progressInterval;
 
-        // Persistência
         let hiddenNews = JSON.parse(localStorage.getItem('hiddenNews') || '[]');
         let customNews = JSON.parse(localStorage.getItem('customNews') || '[]');
+
+        // Limpeza de acentuação e caracteres HTML
+        function decodeHTMLEntities(text) {
+            const textArea = document.createElement('textarea');
+            textArea.innerHTML = text;
+            return textArea.value;
+        }
 
         function normalizeTitle(title) {
             return title.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 60);
         }
 
+        function formatRelativeTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSec = Math.floor((now - date) / 1000);
+
+            if (diffInSec < 60) return `${diffInSec} segundos atrás`;
+            const diffInMin = Math.floor(diffInSec / 60);
+            if (diffInMin < 60) return `${diffInMin} min atrás`;
+            const diffInHour = Math.floor(diffInMin / 60);
+            if (diffInHour < 24) return `${diffInHour}h atrás`;
+            return `${Math.floor(diffInHour / 24)} dias atrás`;
+        }
+
         async function fetchNews() {
             try {
-                const keywords = ['crime', 'assalto', 'roubo', 'polícia', 'gcm', 'prefeitura', 'nunes', 'acidente', 'morte', 'prisão', 'operacao', 'guarda civil'];
+                const keywords = ['crime', 'assalto', 'roubo', 'polícia', 'gcm', 'prefeitura', 'nunes', 'acidente', 'morte', 'prisão', 'operacao'];
                 let allRSSItems = [];
 
                 const results = await Promise.allSettled(FEEDS.map(f => fetch(WORKER_PROXY + encodeURIComponent(f.url)).then(r => r.text())));
@@ -235,12 +244,11 @@
                     if (res.status === 'fulfilled') {
                         const xml = new DOMParser().parseFromString(res.value, 'text/xml');
                         const items = Array.from(xml.querySelectorAll('item, entry')).map(item => ({
-                            title: item.querySelector('title')?.textContent || '',
-                            link: item.querySelector('link')?.textContent || item.querySelector('link')?.getAttribute('href') || '#',
+                            title: decodeHTMLEntities(item.querySelector('title')?.textContent || ''),
                             pubDate: item.querySelector('pubDate, updated')?.textContent || '',
                             source: FEEDS[idx].name,
                             timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
-                            category: 'SP'
+                            category: 'SÃO PAULO'
                         }));
 
                         items.forEach(item => {
@@ -255,10 +263,7 @@
                     }
                 });
 
-                // Unir Notícias Customizadas (Fixas) + Notícias do RSS
                 newsItems = [...customNews, ...allRSSItems];
-
-                // Ordenação: 1. Fixas, 2. Recentes
                 newsItems.sort((a, b) => {
                     if (a.isCustom && !b.isCustom) return -1;
                     if (!a.isCustom && b.isCustom) return 1;
@@ -270,7 +275,6 @@
                 startCarousel();
                 updateLastUpdate();
             } catch (e) {
-                console.error("Erro ao buscar notícias:", e);
                 setTimeout(fetchNews, 10000);
             }
         }
@@ -283,16 +287,16 @@
             }
 
             container.innerHTML = newsItems.map((news, idx) => `
-                <div class="news-card ${idx === 0 ? 'active' : ''} ${news.isCustom ? 'gcm-highlight' : ''}" data-index="${idx}">
+                <div class="news-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
                     <div style="margin-bottom:15px">
-                        <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold">
-                            ${news.isCustom ? '📌 FIXO' : 'NOTÍCIA'}
+                        <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold; text-transform: uppercase;">
+                            ${news.category || 'NOTÍCIA'}
                         </span>
                     </div>
                     <h2 class="news-title">${news.title}</h2>
-                    <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); pt:15px">
+                    <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); padding-top:15px">
                         <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
-                        <span>${new Date(news.pubDate).toLocaleTimeString('pt-BR')}</span>
+                        <span>${news.isCustom ? formatRelativeTime(news.pubDate) : new Date(news.pubDate).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                 </div>
             `).join('');
@@ -304,11 +308,13 @@
         function addCustomNews() {
             const title = document.getElementById('customTitle').value;
             const source = document.getElementById('customSource').value;
+            const category = document.getElementById('customCategory').value;
             if (!title) return;
 
             const newItem = {
-                title,
+                title: decodeHTMLEntities(title),
                 source: source || 'Comunicado',
+                category: category || 'AVISO',
                 pubDate: new Date().toISOString(),
                 timestamp: Date.now(),
                 isCustom: true
@@ -316,14 +322,18 @@
 
             customNews.push(newItem);
             localStorage.setItem('customNews', JSON.stringify(customNews));
+            
+            // Limpa campos
             document.getElementById('customTitle').value = '';
+            document.getElementById('customSource').value = '';
+            document.getElementById('customCategory').value = '';
+            
             fetchNews();
             toggleManager();
         }
 
         function hideNewsItem(title) {
-            const norm = normalizeTitle(title);
-            hiddenNews.push(norm);
+            hiddenNews.push(normalizeTitle(title));
             localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
             fetchNews();
         }
@@ -348,22 +358,20 @@
 
         function renderManagerList() {
             const list = document.getElementById('managerList');
-            let html = '<strong>Fixas:</strong>';
-            
+            let html = '<p style="font-size:0.8rem; color:var(--color-accent); margin-bottom:10px">Fixas:</p>';
             customNews.forEach((n, i) => {
-                html += `<div class="manager-item"><span>📌 ${n.title}</span><button class="btn-delete" onclick="deleteCustom(${i})">Remover</button></div>`;
+                html += `<div class="manager-item"><span>📌 ${n.title.substring(0,40)}...</span><button class="btn-delete" onclick="deleteCustom(${i})">Remover</button></div>`;
             });
 
-            html += '<br><strong>Visíveis (RSS):</strong>';
+            html += '<p style="font-size:0.8rem; color:var(--color-accent); margin:15px 0 10px">Visíveis (RSS):</p>';
             newsItems.filter(n => !n.isCustom).forEach(n => {
-                html += `<div class="manager-item"><span>${n.title}</span><button class="btn-hide" onclick="hideNewsItem('${n.title.replace(/'/g, "\\'")}')">Ocultar</button></div>`;
+                html += `<div class="manager-item"><span>${n.title.substring(0,40)}...</span><button class="btn-hide" onclick="hideNewsItem('${n.title.replace(/'/g, "\\'")}')">Ocultar</button></div>`;
             });
 
-            html += '<br><strong>Ocultas:</strong>';
+            html += '<p style="font-size:0.8rem; color:var(--color-accent); margin:15px 0 10px">Ocultas:</p>';
             hiddenNews.forEach(norm => {
                 html += `<div class="manager-item" style="opacity:0.5"><span>ID: ${norm}</span><button class="btn-restore" onclick="restoreNewsItem('${norm}')">Restaurar</button></div>`;
             });
-
             list.innerHTML = html;
         }
 
@@ -371,13 +379,13 @@
             if (slideInterval) clearInterval(slideInterval);
             slideInterval = setInterval(() => {
                 const cards = document.querySelectorAll('.news-card');
+                if(!cards.length) return;
                 cards[currentIndex].classList.remove('active');
                 currentIndex = (currentIndex + 1) % newsItems.length;
                 cards[currentIndex].classList.add('active');
                 updateCounter();
             }, SLIDE_DURATION);
 
-            // Barra de progresso
             if (progressInterval) clearInterval(progressInterval);
             let p = 0;
             progressInterval = setInterval(() => {
@@ -391,19 +399,14 @@
         }
 
         function updateLastUpdate() {
-            document.getElementById('lastUpdate').textContent = "Atualizado em: " + new Date().toLocaleTimeString();
+            document.getElementById('lastUpdate').textContent = "Sincronizado: " + new Date().toLocaleTimeString();
         }
 
-        // --- Lógica de Horários Fechados (30 min) ---
         function scheduleUpdates() {
             const now = new Date();
             const mins = now.getMinutes();
             const wait = (mins < 30 ? 30 - mins : 60 - mins) * 60 * 1000 - (now.getSeconds() * 1000);
-            
-            setTimeout(() => {
-                fetchNews();
-                setInterval(fetchNews, 30 * 60 * 1000);
-            }, wait);
+            setTimeout(() => { fetchNews(); setInterval(fetchNews, 30 * 60 * 1000); }, wait);
         }
 
         fetchNews();
