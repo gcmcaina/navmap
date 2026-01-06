@@ -325,6 +325,24 @@
     border-radius: 4px;
     cursor: pointer;
 }
+.custom-news-form {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border: 1px dashed var(--color-accent);
+}
+.custom-news-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    color: white;
+    border-radius: 5px;
+}
+.restore-btn { background: #28a745 !important; }
+.delete-btn { background: #dc3545 !important; }
     </style>
 </head>
 <body>
@@ -366,7 +384,8 @@
 
 		// Inicializa a lista de IDs ocultos do localStorage
 let hiddenNews = JSON.parse(localStorage.getItem('hiddenNews') || '[]');
-
+let customNews = JSON.parse(localStorage.getItem('customNews') || '[]');
+		
 function toggleManager() {
     const panel = document.getElementById('newsManager');
     panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
@@ -385,15 +404,78 @@ function hideNewsItem(newsTitle) {
         renderManagerList();
     }
 }
+function addCustomNews() {
+    const title = document.getElementById('customTitle').value;
+    const source = document.getElementById('customSource').value;
+    
+    if (!title) return alert("Digite um título");
+
+    const newItem = {
+        title: title,
+        source: source || 'Aviso',
+        pubDate: new Date().toISOString(),
+        timestamp: Date.now() + 1000000000, // Garante que fique no topo
+        category: 'FIXO',
+        isGCM: false,
+        isAlert: true,
+        isCustom: true,
+        link: '#'
+    };
+
+    customNews.push(newItem);
+    localStorage.setItem('customNews', JSON.stringify(customNews));
+    
+    document.getElementById('customTitle').value = '';
+    fetchNews(); // Recarrega o feed para incluir a nova notícia
+}
+
+// Função para remover notícia personalizada definitivamente
+function deleteCustomNews(index) {
+    customNews.splice(index, 1);
+    localStorage.setItem('customNews', JSON.stringify(customNews));
+    fetchNews();
+}
+
+// Função para restaurar notícia ocultada do RSS
+function restoreNewsItem(normalizedTitle) {
+    hiddenNews = hiddenNews.filter(t => t !== normalizedTitle);
+    localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
+    fetchNews();
+}
 
 function renderManagerList() {
+	
     const list = document.getElementById('managerList');
-    list.innerHTML = newsItems.map(item => `
-        <div class="manager-item">
-            <span style="font-size: 0.9rem;">${item.title}</span>
-            <button onclick="hideNewsItem('${item.title.replace(/'/g, "\\'")}')">Ocultar</button>
-        </div>
-    `).join('');
+    let html = '';
+
+    // 1. Mostrar Notícias Personalizadas (com opção de apagar)
+    customNews.forEach((item, index) => {
+        html += `
+            <div class="manager-item" style="border-left: 4px solid var(--color-gcm)">
+                <span>📌 [FIXA] ${item.title}</span>
+                <button class="delete-btn" onclick="deleteCustomNews(${index})">Eliminar</button>
+            </div>`;
+    });
+
+    // 2. Mostrar Notícias do RSS que estão Visíveis
+    newsItems.filter(n => !n.isCustom).forEach(item => {
+        html += `
+            <div class="manager-item">
+                <span>${item.title}</span>
+                <button onclick="hideNewsItem('${item.title.replace(/'/g, "\\'")}')">Ocultar</button>
+            </div>`;
+    });
+
+    // 3. Mostrar Notícias que foram Ocultadas (ao fim da lista)
+    hiddenNews.forEach(titleNorm => {
+        html += `
+            <div class="manager-item" style="opacity: 0.6; background: rgba(0,0,0,0.2)">
+                <span>🚫 (Oculta) ID: ${titleNorm}</span>
+                <button class="restore-btn" onclick="restoreNewsItem('${titleNorm}')">Re-adicionar</button>
+            </div>`;
+    });
+
+    list.innerHTML = html;
 }
 
         function debugLog(message) {
@@ -754,12 +836,19 @@ function renderManagerList() {
 	<button class="manage-btn" onclick="toggleManager()">⚙️ Gerenciar Feed</button>
 
 <div id="newsManager" class="news-manager-panel">
-    <h3>Ocultar Notícias Indesejadas</h3>
-    <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 20px;">
-        Clique em "Ocultar" para remover a notícia do telão imediatamente.
-    </p>
+    <h3>Gerenciar Feed</h3>
+    
+    <div class="custom-news-form">
+        <h4>📢 Adicionar Notícia Fixa</h4>
+        <input type="text" id="customTitle" placeholder="Título da notícia...">
+        <input type="text" id="customSource" placeholder="Fonte (Ex: Comunicado Interno)">
+        <button onclick="addCustomNews()" style="background: var(--color-accent); width: 100%; padding: 10px; margin-top: 5px;">Adicionar ao Telão</button>
+    </div>
+
+    <h4>Notícias Visíveis / Ocultas</h4>
     <div id="managerList"></div>
-    <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%;">Fechar</button>
+    
+    <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%;">Fechar Painel</button>
 </div>
 </body>
 </html>
