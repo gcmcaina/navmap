@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notícias SP</title>
+    <title>Notícias SP - Telão Corporativo</title>
     <style>
         :root {
             --color-background: #1a1a2e;
@@ -19,11 +19,7 @@
             --color-border: rgba(255, 255, 255, 0.1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -42,16 +38,7 @@
             align-items: center;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--color-accent);
-        }
-
-        .last-update {
-            font-size: 1rem;
-            color: var(--color-text-secondary);
-        }
+        .header h1 { font-size: 2.5rem; color: var(--color-accent); }
 
         .carousel-container {
             height: calc(100vh - 100px);
@@ -67,122 +54,25 @@
             padding: 60px;
             max-width: 1500px;
             width: 100%;
-			height: 600px;
+            height: 600px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--color-border);
             position: absolute;
             opacity: 0;
             transform: translateY(30px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-            pointer-events: none;
         }
 
-        .news-card.active {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
+        .news-card.active { opacity: 1; transform: translateY(0); }
 
-        /* Card especial para notícias da GCM */
         .news-card.gcm-highlight {
             background: linear-gradient(135deg, var(--color-gcm-bg) 0%, var(--color-surface) 100%);
             border: 2px solid var(--color-gcm);
-            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.2);
         }
 
-        .news-card.gcm-highlight .news-category {
-            background: var(--color-gcm);
-            color: #000;
-            font-weight: 700;
-        }
-
-        .news-card.gcm-highlight .news-title {
-            color: var(--color-gcm);
-        }
-
-        /* Card de alerta para notícias muito recentes */
         .news-card.alert-news {
             background: linear-gradient(135deg, var(--color-alert-bg) 0%, var(--color-surface) 100%);
             border: 2px solid var(--color-alert);
-            box-shadow: 0 10px 40px rgba(255, 68, 68, 0.3);
-            animation: alertPulse 2s infinite;
-        }
-
-        .news-card.alert-news .news-category {
-            background: var(--color-alert);
-            color: #fff;
-            font-weight: 700;
-        }
-
-        @keyframes alertPulse {
-            0%, 100% {
-                box-shadow: 0 10px 40px rgba(255, 68, 68, 0.3);
-            }
-            50% {
-                box-shadow: 0 10px 40px rgba(255, 68, 68, 0.6);
-            }
-        }
-
-        .gcm-badge {
-            display: inline-block;
-            background: var(--color-gcm);
-            color: #000;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-left: 10px;
-            text-transform: uppercase;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-        }
-
-        .alert-badge {
-            display: inline-block;
-            background: var(--color-alert);
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-left: 10px;
-            text-transform: uppercase;
-            animation: alertBlink 1.5s infinite;
-        }
-
-        @keyframes alertBlink {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .category-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .news-category {
-            display: inline-block;
-            background: var(--color-accent);
-            color: var(--color-text);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-transform: uppercase;
         }
 
         .news-title {
@@ -190,665 +80,334 @@
             font-weight: 700;
             line-height: 1.2;
             margin-bottom: 30px;
-            color: var(--color-text);
-            cursor: pointer;
-            transition: color 0.3s ease;
-			display: -webkit-box;
-			-webkit-line-clamp: 3;  /* Número de linhas antes do ... */
-			-webkit-box-orient: vertical;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			min-height: 252px;  /* 3 linhas * 84px (tamanho da linha) */
-			max-height: 252px;
-        }
-
-        .news-title:hover {
-            color: var(--color-accent);
-        }
-
-        .news-meta {
-            display: flex;
-            gap: 30px;
-            font-size: 1.5rem;
-            color: var(--color-text-secondary);
-            padding-top: 20px;
-            border-top: 1px solid var(--color-border);
-        }
-
-        .news-source {
-            font-weight: 600;
-            color: var(--color-accent);
-            font-size: 1.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 252px;
         }
 
         .progress-bar {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 4px;
+            height: 6px;
             background: var(--color-accent);
             width: 0%;
-            transition: width 0.1s linear;
-			border-radius: 0 0 20px 20px;
         }
 
-        .news-card.gcm-highlight .progress-bar {
-            background: var(--color-gcm);
-        }
-
-        .news-card.alert-news .progress-bar {
-            background: var(--color-alert);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-            font-size: 1.5rem;
-            color: var(--color-text-secondary);
-        }
-
-        .news-counter {
-            font-size: 1.2rem;
-            color: var(--color-text-secondary);
-            font-weight: 500;
-        }
-
-        .error-message {
-            background: #ff4444;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 40px;
-            text-align: center;
-            font-size: 1.2rem;
-        }
-
-        .debug-info {
+        /* --- Estilos do Painel de Gestão --- */
+        .manage-btn {
             position: fixed;
-            top: 100px;
+            bottom: 20px;
             right: 20px;
+            background: rgba(22, 33, 62, 0.8);
+            color: white;
+            border: 1px solid var(--color-accent);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .news-manager-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: var(--color-surface);
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--color-accent);
+            z-index: 1001;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        }
+
+        .custom-news-form {
+            background: rgba(255, 255, 255, 0.05);
             padding: 15px;
             border-radius: 10px;
-            font-size: 0.9rem;
-            color: var(--color-text-secondary);
-            max-width: 300px;
-            border: 1px solid var(--color-border);
-            max-height: 400px;
-            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px dashed var(--color-accent);
         }
-		.manage-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: rgba(22, 33, 62, 0.7);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    z-index: 1000;
-    transition: all 0.3s;
-}
-.manage-btn:hover { background: var(--color-accent); color: white; }
 
-/* Painel de notícias para ocultar */
-.news-manager-panel {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--color-surface);
-    width: 80%;
-    max-width: 800px;
-    max-height: 80vh;
-    overflow-y: auto;
-    padding: 30px;
-    border-radius: 15px;
-    border: 2px solid var(--color-accent);
-    z-index: 1001;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
-}
-.manager-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid var(--color-border);
-}
-.manager-item button {
-    background: var(--color-alert);
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.custom-news-form {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    border: 1px dashed var(--color-accent);
-}
-.custom-news-form input {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    color: white;
-    border-radius: 5px;
-}
-.restore-btn { background: #28a745 !important; }
-.delete-btn { background: #dc3545 !important; }
+        .custom-news-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+        }
+
+        .manager-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--color-border);
+            gap: 10px;
+        }
+
+        .manager-item button {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-hide { background: var(--color-alert); }
+        .btn-restore { background: #28a745; }
+        .btn-delete { background: #555; }
     </style>
 </head>
 <body>
+
     <div class="header">
         <h1>🚔 Notícias SP</h1>
-        <div>
-            <div class="news-counter" id="newsCounter">Carregando...</div>
-            <div class="last-update" id="lastUpdate">Atualizando...</div>
+        <div style="text-align: right;">
+            <div id="newsCounter">Carregando...</div>
+            <div id="lastUpdate" style="font-size: 0.8rem; color: var(--color-text-secondary);"></div>
         </div>
     </div>
 
     <div class="carousel-container" id="carouselContainer">
-        <div class="loading">Carregando notícias de múltiplas fontes...</div>
+        <div class="loading">Sincronizando feed...</div>
     </div>
 
     <div class="progress-bar" id="progressBar"></div>
-    <div class="debug-info" id="debugInfo" style="display: none;"></div>
+
+    <button class="manage-btn" onclick="toggleManager()">⚙️ Gerenciar</button>
+
+    <div id="newsManager" class="news-manager-panel">
+        <h2 style="margin-bottom: 20px;">Painel de Controle</h2>
+        
+        <div class="custom-news-form">
+            <h4>📢 Adicionar Notícia Fixa</h4>
+            <input type="text" id="customTitle" placeholder="Título da notícia corporativa...">
+            <input type="text" id="customSource" placeholder="Fonte (Ex: RH, Segurança, Comunicado)">
+            <button onclick="addCustomNews()" style="background: var(--color-accent); color:white; width: 100%; padding: 10px; margin-top: 10px; border:none; border-radius:5px; cursor:pointer;">Publicar no Telão</button>
+        </div>
+
+        <h4>Lista de Notícias</h4>
+        <div id="managerList"></div>
+        <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%; cursor:pointer;">Fechar</button>
+    </div>
 
     <script>
         const FEEDS = [
             { url: 'https://g1.globo.com/dynamo/sp/sao-paulo/rss2.xml', name: 'G1', limit: 15 },
             { url: 'https://news.google.com/rss/search?q=São%20Paulo&hl=pt-BR&gl=BR&ceid=BR%3Apt-419', name: 'Google News', limit: 15 },
             { url: 'https://rss.uol.com.br/feed/noticias.xml', name: 'UOL', limit: 7 },
-            { url: 'https://www.gazetadopovo.com.br/feed/rss/republica.xml', name: 'Gazeta - República', limit: 5 },
-            { url: 'https://www.gazetadopovo.com.br/feed/rss/ultimas-noticias.xml', name: 'Gazeta - Últimas', limit: 4 },
-            { url: 'https://www.gazetadopovo.com.br/feed/rss/sao-paulo.xml', name: 'Gazeta - SP', limit: 4 }
+            { url: 'https://www.gazetadopovo.com.br/feed/rss/sao-paulo.xml', name: 'Gazeta - SP', limit: 8 }
         ];
 
         const WORKER_PROXY = 'https://news-fetcher.gcmcaina.workers.dev/?url=';
-        const UPDATE_INTERVAL = 30 * 60 * 1000;
         const SLIDE_DURATION = 12000;
-        const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
-        const ONE_HOUR_MS = 60 * 60 * 1000;
-
+        
         let newsItems = [];
         let currentIndex = 0;
-        let slideInterval;
-        let progressInterval;
+        let slideInterval, progressInterval;
 
-		// Inicializa a lista de IDs ocultos do localStorage
-let hiddenNews = JSON.parse(localStorage.getItem('hiddenNews') || '[]');
-let customNews = JSON.parse(localStorage.getItem('customNews') || '[]');
-		
-function toggleManager() {
-    const panel = document.getElementById('newsManager');
-    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    if(panel.style.display === 'block') renderManagerList();
-}
+        // Persistência
+        let hiddenNews = JSON.parse(localStorage.getItem('hiddenNews') || '[]');
+        let customNews = JSON.parse(localStorage.getItem('customNews') || '[]');
 
-function hideNewsItem(newsTitle) {
-    const normalized = normalizeTitle(newsTitle);
-    if (!hiddenNews.includes(normalized)) {
-        hiddenNews.push(normalized);
-        localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
-        
-        // Remove do array atual e atualiza o carrossel
-        newsItems = newsItems.filter(item => normalizeTitle(item.title) !== normalized);
-        renderCarousel();
-        renderManagerList();
-    }
-}
-function addCustomNews() {
-    const title = document.getElementById('customTitle').value;
-    const source = document.getElementById('customSource').value;
-    
-    if (!title) return alert("Digite um título");
-
-    const newItem = {
-        title: title,
-        source: source || 'Aviso',
-        pubDate: new Date().toISOString(),
-        timestamp: Date.now() + 1000000000, // Garante que fique no topo
-        category: 'FIXO',
-        isGCM: false,
-        isAlert: true,
-        isCustom: true,
-        link: '#'
-    };
-
-    customNews.push(newItem);
-    localStorage.setItem('customNews', JSON.stringify(customNews));
-    
-    document.getElementById('customTitle').value = '';
-    fetchNews(); // Recarrega o feed para incluir a nova notícia
-}
-
-// Função para remover notícia personalizada definitivamente
-function deleteCustomNews(index) {
-    customNews.splice(index, 1);
-    localStorage.setItem('customNews', JSON.stringify(customNews));
-    fetchNews();
-}
-
-// Função para restaurar notícia ocultada do RSS
-function restoreNewsItem(normalizedTitle) {
-    hiddenNews = hiddenNews.filter(t => t !== normalizedTitle);
-    localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
-    fetchNews();
-}
-
-function renderManagerList() {
-	
-    const list = document.getElementById('managerList');
-    let html = '';
-
-    // 1. Mostrar Notícias Personalizadas (com opção de apagar)
-    customNews.forEach((item, index) => {
-        html += `
-            <div class="manager-item" style="border-left: 4px solid var(--color-gcm)">
-                <span>📌 [FIXA] ${item.title}</span>
-                <button class="delete-btn" onclick="deleteCustomNews(${index})">Eliminar</button>
-            </div>`;
-    });
-
-    // 2. Mostrar Notícias do RSS que estão Visíveis
-    newsItems.filter(n => !n.isCustom).forEach(item => {
-        html += `
-            <div class="manager-item">
-                <span>${item.title}</span>
-                <button onclick="hideNewsItem('${item.title.replace(/'/g, "\\'")}')">Ocultar</button>
-            </div>`;
-    });
-
-    // 3. Mostrar Notícias que foram Ocultadas (ao fim da lista)
-    hiddenNews.forEach(titleNorm => {
-        html += `
-            <div class="manager-item" style="opacity: 0.6; background: rgba(0,0,0,0.2)">
-                <span>🚫 (Oculta) ID: ${titleNorm}</span>
-                <button class="restore-btn" onclick="restoreNewsItem('${titleNorm}')">Re-adicionar</button>
-            </div>`;
-    });
-
-    list.innerHTML = html;
-}
-
-        function debugLog(message) {
-            const debugDiv = document.getElementById('debugInfo');
-            debugDiv.style.display = 'block';
-            const time = new Date().toLocaleTimeString('pt-BR');
-            debugDiv.innerHTML += `<div>${time}: ${message}</div>`;
-            console.log(message);
-        }
-
-        function isGCMRelated(title) {
-            const gcmKeywords = [
-                'gcm', 'guarda civil', 'guarda municipal', 'guarda metropolitana',
-                'guardas civis', 'guardas municipais'
-            ];
-            const titleLower = title.toLowerCase();
-            return gcmKeywords.some(keyword => titleLower.includes(keyword));
-        }
-
-        function isRecent(dateString) {
-            if (!dateString) return false;
-            try {
-                const itemDate = new Date(dateString);
-                const now = new Date();
-                const diffMs = now - itemDate;
-                return diffMs <= TWO_DAYS_MS;
-            } catch (e) {
-                return false;
-            }
-        }
-
-        function isVeryRecent(dateString) {
-            if (!dateString) return false;
-            try {
-                const itemDate = new Date(dateString);
-                const now = new Date();
-                const diffMs = now - itemDate;
-                return diffMs <= ONE_HOUR_MS;
-            } catch (e) {
-                return false;
-            }
-        }
-		
         function normalizeTitle(title) {
-            return title
-                .toLowerCase()
-                .replace(/[áàâãä]/g, 'a')
-                .replace(/[éèêë]/g, 'e')
-                .replace(/[íìîï]/g, 'i')
-                .replace(/[óòôõö]/g, 'o')
-                .replace(/[úùûü]/g, 'u')
-                .replace(/[ç]/g, 'c')
-                .replace(/[^a-z0-9]/g, '')
-                .substring(0, 50);
-        }
-
-        function isDuplicate(newItem, existingItems) {
-            const newTitleNormalized = normalizeTitle(newItem.title);
-            
-            return existingItems.some(existing => {
-                const existingTitleNormalized = normalizeTitle(existing.title);
-                
-                if (newTitleNormalized === existingTitleNormalized) {
-                    return true;
-                }
-                
-                const similarity = calculateSimilarity(newTitleNormalized, existingTitleNormalized);
-                return similarity > 0.85;
-            });
-        }
-
-        function calculateSimilarity(str1, str2) {
-            const longer = str1.length > str2.length ? str1 : str2;
-            const shorter = str1.length > str2.length ? str2 : str1;
-            
-            if (longer.length === 0) return 1.0;
-            
-            const editDistance = levenshteinDistance(longer, shorter);
-            return (longer.length - editDistance) / longer.length;
-        }
-
-        function levenshteinDistance(str1, str2) {
-            const matrix = [];
-            
-            for (let i = 0; i <= str2.length; i++) {
-                matrix[i] = [i];
-            }
-            
-            for (let j = 0; j <= str1.length; j++) {
-                matrix[0][j] = j;
-            }
-            
-            for (let i = 1; i <= str2.length; i++) {
-                for (let j = 1; j <= str1.length; j++) {
-                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(
-                            matrix[i - 1][j - 1] + 1,
-                            matrix[i][j - 1] + 1,
-                            matrix[i - 1][j] + 1
-                        );
-                    }
-                }
-            }
-            
-            return matrix[str2.length][str1.length];
-        }
-
-        async function fetchRSSFeed(feedUrl, sourceName) {
-            debugLog(`Buscando ${sourceName}...`);
-            const fetchUrl = WORKER_PROXY + encodeURIComponent(feedUrl);
-            
-            const response = await fetch(fetchUrl);
-            debugLog(`${sourceName} - Status: ${response.status}`);
-            
-            if (!response.ok) {
-                throw new Error(`${sourceName} - Erro HTTP: ${response.status}`);
-            }
-            
-            const xmlText = await response.text();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-            
-            const parseError = xmlDoc.querySelector('parsererror');
-            if (parseError) {
-                throw new Error(`${sourceName} - Erro ao fazer parse do XML`);
-            }
-            
-            const items = xmlDoc.querySelectorAll('item, entry');
-            debugLog(`${sourceName} - Encontrados ${items.length} items`);
-            
-            return Array.from(items).map(item => {
-                const title = item.querySelector('title')?.textContent || 'Sem título';
-                const linkEl = item.querySelector('link');
-                const link = linkEl?.getAttribute?.('href') || linkEl?.textContent || '';
-                const published = item.querySelector('pubDate, updated, published')?.textContent || '';
-                
-                return {
-                    title: cleanText(title),
-                    link,
-                    pubDate: published,
-                    timestamp: new Date(published).getTime() || 0,
-                    source: sourceName,
-                    category: 'São Paulo',
-                    isGCM: isGCMRelated(title),
-                    isAlert: isVeryRecent(published)
-                };
-            });
+            return title.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 60);
         }
 
         async function fetchNews() {
             try {
-                debugLog('Iniciando busca de notícias...');
-                
-                const keywords = [
-                    'crime', 'crimes', 'assalto', 'roubo', 'furto', 'homicídio', 'homicidio', 'latrocínio', 'latrocinio',
-                    'sequestro', 'tiroteio', 'tráfico', 'trafico', 'feminicídio', 'feminicidio', 'golpe', 'estupro',
-                    'violência', 'violencia', 'facção', 'faccao', 'pcc', 'cv', 'comando vermelho', 'milícia', 'militia',
-                    'polícia', 'policia', 'policial',
-                    'gcm', 'guarda civil', 'guarda municipal', 'guarda metropolitana',
-                    'operação', 'operacao', 'prisão', 'prisao', 'preso', 'investigação', 'investigacao', 'delegacia',
-                    'arma', 'droga', 'entorpecente', 'flagrante', 'suspeito',
-                    'vítima', 'vitima', 'acidente', 'atropelamento', 'morte', 'ferido', 'nunes',
-                    'ricardo nunes', 'prefeitura'
-                ];
+                const keywords = ['crime', 'assalto', 'roubo', 'polícia', 'gcm', 'prefeitura', 'nunes', 'acidente', 'morte', 'prisão', 'operacao', 'guarda civil'];
+                let allRSSItems = [];
 
-                function matchesKeywords(title) {
-                    const titleLower = title.toLowerCase();
-                    return keywords.some(keyword => titleLower.includes(keyword));
-                }
+                const results = await Promise.allSettled(FEEDS.map(f => fetch(WORKER_PROXY + encodeURIComponent(f.url)).then(r => r.text())));
 
-                const results = await Promise.allSettled(
-                    FEEDS.map(feed => fetchRSSFeed(feed.url, feed.name))
-                );
+                results.forEach((res, idx) => {
+                    if (res.status === 'fulfilled') {
+                        const xml = new DOMParser().parseFromString(res.value, 'text/xml');
+                        const items = Array.from(xml.querySelectorAll('item, entry')).map(item => ({
+                            title: item.querySelector('title')?.textContent || '',
+                            link: item.querySelector('link')?.textContent || item.querySelector('link')?.getAttribute('href') || '#',
+                            pubDate: item.querySelector('pubDate, updated')?.textContent || '',
+                            source: FEEDS[idx].name,
+                            timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
+                            category: 'SP'
+                        }));
 
-                let allItems = [];
-
-                results.forEach((result, index) => {
-                    const feed = FEEDS[index];
-                    
-                    if (result.status === 'fulfilled') {
-                        const items = result.value
-                            .filter(item => isRecent(item.pubDate))
-                            .filter(item => matchesKeywords(item.title));
-                        
                         items.forEach(item => {
-							const titleNorm = normalizeTitle(item.title);
-                            if (!hiddenNews.includes(titleNorm) && !isDuplicate(item, allItems)) {
-        						allItems.push(item);
+                            const norm = normalizeTitle(item.title);
+                            const matches = keywords.some(k => item.title.toLowerCase().includes(k));
+                            const isHidden = hiddenNews.includes(norm);
+                            
+                            if (matches && !isHidden && !allRSSItems.some(existing => normalizeTitle(existing.title) === norm)) {
+                                allRSSItems.push(item);
                             }
                         });
-                        
-                        debugLog(`${feed.name}: ${items.length} notícias (${allItems.length} total sem duplicatas)`);
-                    } else {
-                        debugLog(`⚠️ ${feed.name} falhou: ${result.reason?.message}`);
                     }
                 });
 
-                newsItems = [];
-                const itemsBySource = {};
-                
-                FEEDS.forEach(feed => {
-                    itemsBySource[feed.name] = allItems
-                        .filter(item => item.source === feed.name)
-                        .slice(0, feed.limit);
-                });
+                // Unir Notícias Customizadas (Fixas) + Notícias do RSS
+                newsItems = [...customNews, ...allRSSItems];
 
-                Object.values(itemsBySource).forEach(items => {
-                    newsItems.push(...items);
-                });
-
+                // Ordenação: 1. Fixas, 2. Recentes
                 newsItems.sort((a, b) => {
-                    if (a.isGCM && !b.isGCM) return -1;
-                    if (!a.isGCM && b.isGCM) return 1;
-                    if (a.isAlert && !b.isAlert) return -1;
-                    if (!a.isAlert && b.isAlert) return 1;
+                    if (a.isCustom && !b.isCustom) return -1;
+                    if (!a.isCustom && b.isCustom) return 1;
                     return b.timestamp - a.timestamp;
                 });
 
                 newsItems = newsItems.slice(0, 50);
-
-                const gcmCount = newsItems.filter(n => n.isGCM).length;
-                const alertCount = newsItems.filter(n => n.isAlert).length;
-                
-                debugLog(`Total: ${newsItems.length} notícias (GCM: ${gcmCount}, Alertas: ${alertCount})`);
-
-                if (newsItems.length === 0) {
-                    throw new Error('Nenhuma notícia encontrada nos últimos 2 dias');
-                }
-
-                updateLastUpdate();
                 renderCarousel();
                 startCarousel();
-                
-                setTimeout(() => {
-                    document.getElementById('debugInfo').style.display = 'none';
-                }, 5000);
-                
-            } catch (error) {
-                debugLog('ERRO: ' + error.message);
-                console.error('Erro detalhado:', error);
-                document.getElementById('carouselContainer').innerHTML = 
-                    `<div class="error-message">Erro ao carregar notícias: ${error.message}<br>Tentando novamente em 10 segundos...</div>`;
-                setTimeout(fetchNews, 10000);
-            }
-        }
-
-        function cleanText(text) {
-            const div = document.createElement('div');
-            div.innerHTML = text;
-            return div.textContent || div.innerText || '';
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            try {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffMs = now - date;
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMs / 3600000);
-                
-                if (diffMins < 60) {
-                    return `${diffMins} min atrás`;
-                } else if (diffHours < 24) {
-                    return `${diffHours}h atrás`;
-                } else {
-                    const days = Math.floor(diffHours / 24);
-                    return `${days} dia${days > 1 ? 's' : ''} atrás`;
-                }
+                updateLastUpdate();
             } catch (e) {
-                return dateString;
+                console.error("Erro ao buscar notícias:", e);
+                setTimeout(fetchNews, 10000);
             }
         }
 
         function renderCarousel() {
             const container = document.getElementById('carouselContainer');
-            container.innerHTML = newsItems.map((news, index) => `
-                <div class="news-card ${index === 0 ? 'active' : ''} ${news.isGCM ? 'gcm-highlight' : ''} ${news.isAlert ? 'alert-news' : ''}" data-index="${index}">
-                    <div class="category-header">
-                        <div class="news-category">
-                            ${news.category}
-                            ${news.isGCM ? '<span class="gcm-badge">⭐ GCM</span>' : ''}
-                            ${news.isAlert ? '<span class="alert-badge">🔴 AGORA</span>' : ''}
-                        </div>
+            if (newsItems.length === 0) {
+                container.innerHTML = "<div>Sem notícias no momento.</div>";
+                return;
+            }
+
+            container.innerHTML = newsItems.map((news, idx) => `
+                <div class="news-card ${idx === 0 ? 'active' : ''} ${news.isCustom ? 'gcm-highlight' : ''}" data-index="${idx}">
+                    <div style="margin-bottom:15px">
+                        <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold">
+                            ${news.isCustom ? '📌 FIXO' : 'NOTÍCIA'}
+                        </span>
                     </div>
-                    <h2 class="news-title" onclick="window.open('${news.link}', '_blank')">${news.title}</h2>
-                    <div class="news-meta">
-                        <span class="news-source">${news.source}</span>
-                        <span>${formatDate(news.pubDate)}</span>
+                    <h2 class="news-title">${news.title}</h2>
+                    <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); pt:15px">
+                        <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
+                        <span>${new Date(news.pubDate).toLocaleTimeString('pt-BR')}</span>
                     </div>
                 </div>
             `).join('');
-
-            document.getElementById('newsCounter').textContent = 
-                `${currentIndex + 1} / ${newsItems.length}`;
-        }
-
-        function showSlide(index) {
-            const cards = document.querySelectorAll('.news-card');
-            cards.forEach(card => card.classList.remove('active'));
             
-            if (cards[index]) {
-                cards[index].classList.add('active');
-                currentIndex = index;
-                document.getElementById('newsCounter').textContent = 
-                    `${currentIndex + 1} / ${newsItems.length}`;
-            }
+            currentIndex = 0;
+            updateCounter();
         }
 
-        function nextSlide() {
-            currentIndex = (currentIndex + 1) % newsItems.length;
-            showSlide(currentIndex);
+        function addCustomNews() {
+            const title = document.getElementById('customTitle').value;
+            const source = document.getElementById('customSource').value;
+            if (!title) return;
+
+            const newItem = {
+                title,
+                source: source || 'Comunicado',
+                pubDate: new Date().toISOString(),
+                timestamp: Date.now(),
+                isCustom: true
+            };
+
+            customNews.push(newItem);
+            localStorage.setItem('customNews', JSON.stringify(customNews));
+            document.getElementById('customTitle').value = '';
+            fetchNews();
+            toggleManager();
+        }
+
+        function hideNewsItem(title) {
+            const norm = normalizeTitle(title);
+            hiddenNews.push(norm);
+            localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
+            fetchNews();
+        }
+
+        function restoreNewsItem(norm) {
+            hiddenNews = hiddenNews.filter(n => n !== norm);
+            localStorage.setItem('hiddenNews', JSON.stringify(hiddenNews));
+            fetchNews();
+        }
+
+        function deleteCustom(idx) {
+            customNews.splice(idx, 1);
+            localStorage.setItem('customNews', JSON.stringify(customNews));
+            fetchNews();
+        }
+
+        function toggleManager() {
+            const p = document.getElementById('newsManager');
+            p.style.display = p.style.display === 'block' ? 'none' : 'block';
+            if (p.style.display === 'block') renderManagerList();
+        }
+
+        function renderManagerList() {
+            const list = document.getElementById('managerList');
+            let html = '<strong>Fixas:</strong>';
+            
+            customNews.forEach((n, i) => {
+                html += `<div class="manager-item"><span>📌 ${n.title}</span><button class="btn-delete" onclick="deleteCustom(${i})">Remover</button></div>`;
+            });
+
+            html += '<br><strong>Visíveis (RSS):</strong>';
+            newsItems.filter(n => !n.isCustom).forEach(n => {
+                html += `<div class="manager-item"><span>${n.title}</span><button class="btn-hide" onclick="hideNewsItem('${n.title.replace(/'/g, "\\'")}')">Ocultar</button></div>`;
+            });
+
+            html += '<br><strong>Ocultas:</strong>';
+            hiddenNews.forEach(norm => {
+                html += `<div class="manager-item" style="opacity:0.5"><span>ID: ${norm}</span><button class="btn-restore" onclick="restoreNewsItem('${norm}')">Restaurar</button></div>`;
+            });
+
+            list.innerHTML = html;
         }
 
         function startCarousel() {
             if (slideInterval) clearInterval(slideInterval);
+            slideInterval = setInterval(() => {
+                const cards = document.querySelectorAll('.news-card');
+                cards[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % newsItems.length;
+                cards[currentIndex].classList.add('active');
+                updateCounter();
+            }, SLIDE_DURATION);
+
+            // Barra de progresso
             if (progressInterval) clearInterval(progressInterval);
-
-            slideInterval = setInterval(nextSlide, SLIDE_DURATION);
-
-            let progress = 0;
-            const progressBar = document.getElementById('progressBar');
+            let p = 0;
             progressInterval = setInterval(() => {
-                progress += 100 / (SLIDE_DURATION / 100);
-                if (progress >= 100) {
-                    progress = 0;
-                }
-                progressBar.style.width = progress + '%';
-            }, 100);
+                p += 1;
+                document.getElementById('progressBar').style.width = (p % 101) + '%';
+            }, SLIDE_DURATION / 100);
+        }
+
+        function updateCounter() {
+            document.getElementById('newsCounter').textContent = `${currentIndex + 1} / ${newsItems.length}`;
         }
 
         function updateLastUpdate() {
+            document.getElementById('lastUpdate').textContent = "Atualizado em: " + new Date().toLocaleTimeString();
+        }
+
+        // --- Lógica de Horários Fechados (30 min) ---
+        function scheduleUpdates() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            document.getElementById('lastUpdate').textContent = 
-                `Última atualização: ${timeString}`;
+            const mins = now.getMinutes();
+            const wait = (mins < 30 ? 30 - mins : 60 - mins) * 60 * 1000 - (now.getSeconds() * 1000);
+            
+            setTimeout(() => {
+                fetchNews();
+                setInterval(fetchNews, 30 * 60 * 1000);
+            }, wait);
         }
 
         fetchNews();
-        setInterval(fetchNews, UPDATE_INTERVAL);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') {
-                nextSlide();
-                startCarousel();
-            } else if (e.key === 'ArrowLeft') {
-                currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
-                showSlide(currentIndex);
-                startCarousel();
-            }
-        });
+        scheduleUpdates();
     </script>
-	<button class="manage-btn" onclick="toggleManager()">⚙️ Gerenciar Feed</button>
-
-<div id="newsManager" class="news-manager-panel">
-    <h3>Gerenciar Feed</h3>
-    
-    <div class="custom-news-form">
-        <h4>📢 Adicionar Notícia Fixa</h4>
-        <input type="text" id="customTitle" placeholder="Título da notícia...">
-        <input type="text" id="customSource" placeholder="Fonte (Ex: Comunicado Interno)">
-        <button onclick="addCustomNews()" style="background: var(--color-accent); width: 100%; padding: 10px; margin-top: 5px;">Adicionar ao Telão</button>
-    </div>
-
-    <h4>Notícias Visíveis / Ocultas</h4>
-    <div id="managerList"></div>
-    
-    <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%;">Fechar Painel</button>
-</div>
 </body>
 </html>
