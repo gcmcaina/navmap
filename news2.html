@@ -244,11 +244,18 @@
                     if (res.status === 'fulfilled') {
                         const xml = new DOMParser().parseFromString(res.value, 'text/xml');
                         const items = Array.from(xml.querySelectorAll('item, entry')).map(item => ({
+                            // Busca o link de forma robusta para diferentes padrões de RSS/Atom
+                            const linkEl = item.querySelector('link');
+                            const link = linkEl?.textContent || linkEl?.getAttribute('href') || '#';
+
+                            return {
                             title: decodeHTMLEntities(item.querySelector('title')?.textContent || ''),
+                            link: link.trim(),
                             pubDate: item.querySelector('pubDate, updated')?.textContent || '',
                             source: FEEDS[idx].name,
                             timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
                             category: 'SÃO PAULO'
+                        };
                         }));
 
                         items.forEach(item => {
@@ -418,6 +425,26 @@
 
         fetchNews();
         scheduleUpdates();
+        // Funcionalidade de navegação por teclado
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') {
+        // Avança para a próxima notícia
+        const cards = document.querySelectorAll('.news-card');
+        cards[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % newsItems.length;
+        cards[currentIndex].classList.add('active');
+        updateCounter();
+        startCarousel(); // Reinicia o timer para não pular rápido demais
+    } else if (e.key === 'ArrowLeft') {
+        // Volta para a notícia anterior
+        const cards = document.querySelectorAll('.news-card');
+        cards[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
+        cards[currentIndex].classList.add('active');
+        updateCounter();
+        startCarousel(); // Reinicia o timer
+    }
+});
     </script>
 </body>
 </html>
