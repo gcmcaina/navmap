@@ -280,30 +280,37 @@
         }
 
         function renderCarousel() {
-            const container = document.getElementById('carouselContainer');
-            if (newsItems.length === 0) {
-                container.innerHTML = "<div>Sem notícias no momento.</div>";
-                return;
-            }
+    const container = document.getElementById('carouselContainer');
+    if (newsItems.length === 0) {
+        container.innerHTML = "<div>Sem notícias no momento.</div>";
+        return;
+    }
 
-            container.innerHTML = newsItems.map((news, idx) => `
-                <div class="news-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
-                    <div style="margin-bottom:15px">
-                        <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold; text-transform: uppercase;">
-                            ${news.category || 'NOTÍCIA'}
-                        </span>
-                    </div>
-                    <h2 class="news-title">${news.title}</h2>
-                    <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); padding-top:15px">
-                        <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
-                        <span>${news.isCustom ? formatRelativeTime(news.pubDate) : new Date(news.pubDate).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</span>
-                    </div>
-                </div>
-            `).join('');
+    container.innerHTML = newsItems.map((news, idx) => `
+        <div class="news-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+            <div style="margin-bottom:15px">
+                <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold; text-transform: uppercase;">
+                    ${news.category || 'NOTÍCIA'}
+                </span>
+            </div>
             
-            currentIndex = 0;
-            updateCounter();
-        }
+            <h2 class="news-title" 
+                onclick="window.open('${news.link}', '_blank')" 
+                style="cursor: pointer;">
+                ${news.title}
+            </h2>
+
+            <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); padding-top:15px">
+                <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
+                
+                <span>${formatRelativeTime(news.pubDate)}</span>
+            </div>
+        </div>
+    `).join('');
+    
+    currentIndex = 0;
+    updateCounter();
+}
 
         function addCustomNews() {
             const title = document.getElementById('customTitle').value;
