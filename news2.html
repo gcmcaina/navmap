@@ -243,20 +243,20 @@
                 results.forEach((res, idx) => {
                     if (res.status === 'fulfilled') {
                         const xml = new DOMParser().parseFromString(res.value, 'text/xml');
-                        const items = Array.from(xml.querySelectorAll('item, entry')).map(item => ({
-                            // Busca o link de forma robusta para diferentes padrões de RSS/Atom
-                            const linkEl = item.querySelector('link');
-                            const link = linkEl?.textContent || linkEl?.getAttribute('href') || '#';
-
-                            return {
-                            title: decodeHTMLEntities(item.querySelector('title')?.textContent || ''),
-                            link: link.trim(),
-                            pubDate: item.querySelector('pubDate, updated')?.textContent || '',
-                            source: FEEDS[idx].name,
-                            timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
-                            category: 'SÃO PAULO'
+                        const items = Array.from(xml.querySelectorAll('item, entry')).map(item => {
+                    // Busca o link de forma robusta para diferentes padrões de RSS/Atom
+                    const linkEl = item.querySelector('link');
+                    const link = linkEl?.textContent || linkEl?.getAttribute('href') || '#';
+    
+                    return {
+                        title: decodeHTMLEntities(item.querySelector('title')?.textContent || ''),
+                        link: link.trim(), // Garante que não existam espaços
+                        pubDate: item.querySelector('pubDate, updated')?.textContent || '',
+                        source: FEEDS[idx].name,
+                        timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
+                        category: 'SÃO PAULO'
                         };
-                        }));
+                    });
 
                         items.forEach(item => {
                             const norm = normalizeTitle(item.title);
@@ -300,16 +300,13 @@
                     ${news.category || 'NOTÍCIA'}
                 </span>
             </div>
-            
             <h2 class="news-title" 
-                onclick="window.open('${news.link}', '_blank')" 
-                style="cursor: pointer;">
+                onclick="${news.link && news.link !== '#' ? `window.open('${news.link}', '_blank')` : ''}" 
+                style="cursor: ${news.link && news.link !== '#' ? 'pointer' : 'default'};">
                 ${news.title}
             </h2>
-
             <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); padding-top:15px">
                 <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
-                
                 <span>${formatRelativeTime(news.pubDate)}</span>
             </div>
         </div>
@@ -318,6 +315,26 @@
     currentIndex = 0;
     updateCounter();
 }
+
+// Navegação por teclado
+document.addEventListener('keydown', (e) => {
+    const cards = document.querySelectorAll('.news-card');
+    if (!cards.length) return;
+
+    if (e.key === 'ArrowRight') {
+        cards[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % newsItems.length;
+        cards[currentIndex].classList.add('active');
+        updateCounter();
+        startCarousel(); 
+    } else if (e.key === 'ArrowLeft') {
+        cards[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
+        cards[currentIndex].classList.add('active');
+        updateCounter();
+        startCarousel();
+    }
+});
 
         function addCustomNews() {
             const title = document.getElementById('customTitle').value;
