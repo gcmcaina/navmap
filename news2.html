@@ -206,7 +206,7 @@
 
         async function fetchNews() {
             try {
-                const keywords = ['crime', 'assalto', 'roubo', 'polícia', 'gcm', 'prefeitura', 'nunes', 'acidente', 'morte', 'prisão', 'operacao'];
+                const keywords = ['crime', 'assalto', 'roubo', 'polícia', 'gcm', 'prefeitura', 'nunes', 'acidente', 'morte', 'prisão', 'operacao', 'Guarda', 'PM', 'Latrocínio'];
                 let allRSSItems = [];
 
                 const results = await Promise.allSettled(FEEDS.map(f => fetch(WORKER_PROXY + encodeURIComponent(f.url)).then(r => r.text())));
