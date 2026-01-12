@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notícias SP</title>
+    <title>Notícias SP - Telão Corporativo</title>
     <style>
         :root {
             --color-background: #1a1a2e;
@@ -59,9 +59,14 @@
             opacity: 0;
             transform: translateY(30px);
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            pointer-events: none;
         }
 
-        .news-card.active { opacity: 1; transform: translateY(0); }
+        .news-card.active { 
+            opacity: 1; 
+            transform: translateY(0); 
+            pointer-events: auto;
+        }
 
         .news-title {
             font-size: 3.5rem;
@@ -73,6 +78,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             min-height: 252px;
+            cursor: pointer;
         }
 
         .progress-bar {
@@ -84,72 +90,40 @@
             width: 0%;
         }
 
-        /* Painel de Gestão */
         .manage-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(22, 33, 62, 0.8);
-            color: white;
-            border: 1px solid var(--color-accent);
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 1000;
-            font-size: 0.8rem;
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(22, 33, 62, 0.8); color: white;
+            border: 1px solid var(--color-accent); padding: 8px 15px;
+            border-radius: 5px; cursor: pointer; z-index: 1000; font-size: 0.8rem;
         }
 
         .news-manager-panel {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--color-surface);
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
-            padding: 30px;
-            border-radius: 15px;
-            border: 2px solid var(--color-accent);
-            z-index: 1001;
+            display: none; position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); background: var(--color-surface);
+            width: 90%; max-width: 800px; max-height: 85vh;
+            overflow-y: auto; padding: 30px; border-radius: 15px;
+            border: 2px solid var(--color-accent); z-index: 1001;
             box-shadow: 0 0 50px rgba(0,0,0,0.9);
         }
 
         .custom-news-form {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px dashed var(--color-accent);
+            background: rgba(255, 255, 255, 0.05); padding: 15px;
+            border-radius: 10px; margin-bottom: 20px; border: 1px dashed var(--color-accent);
         }
 
         .custom-news-form input {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background: #000;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 5px;
+            width: 100%; padding: 10px; margin: 5px 0;
+            background: #000; border: 1px solid #444; color: white; border-radius: 5px;
         }
 
         .manager-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid var(--color-border);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid var(--color-border);
         }
 
         .manager-item button {
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            color: white;
-            font-size: 0.7rem;
+            padding: 5px 10px; border-radius: 4px; border: none;
+            cursor: pointer; color: white; font-size: 0.7rem;
         }
 
         .btn-hide { background: var(--color-alert); }
@@ -177,16 +151,14 @@
 
     <div id="newsManager" class="news-manager-panel">
         <h2 style="margin-bottom: 20px;">Painel de Controle</h2>
-        
         <div class="custom-news-form">
             <h4>📢 Adicionar Notícia Personalizada</h4>
             <input type="text" id="customTitle" placeholder="Título da notícia...">
             <input type="text" id="customSource" placeholder="Fonte (Ex: RH, Segurança)">
-            <input type="text" id="customCategory" placeholder="Categoria (Ex: AVISO, EVENTO, URGENTE)">
-            <button onclick="addCustomNews()" style="background: var(--color-accent); color:white; width: 100%; padding: 10px; margin-top: 10px; border:none; border-radius:5px; cursor:pointer;">Publicar no Telão</button>
+            <input type="text" id="customCategory" placeholder="Categoria (Ex: AVISO, URGENTE)">
+            <input type="text" id="customLink" placeholder="Link opcional (http://...)">
+            <button onclick="addCustomNews()" style="background: var(--color-accent); color:white; width: 100%; padding: 10px; margin-top: 10px; border:none; border-radius:5px; cursor:pointer;">Publicar</button>
         </div>
-
-        <h4>Gestão de Conteúdo</h4>
         <div id="managerList"></div>
         <button onclick="toggleManager()" style="margin-top:20px; padding: 10px; width: 100%; cursor:pointer;">Fechar</button>
     </div>
@@ -203,12 +175,12 @@
         
         let newsItems = [];
         let currentIndex = 0;
-        let slideInterval, progressInterval;
+        let slideInterval = null;
+        let progressInterval = null;
 
         let hiddenNews = JSON.parse(localStorage.getItem('hiddenNews') || '[]');
         let customNews = JSON.parse(localStorage.getItem('customNews') || '[]');
 
-        // Limpeza de acentuação e caracteres HTML
         function decodeHTMLEntities(text) {
             const textArea = document.createElement('textarea');
             textArea.innerHTML = text;
@@ -224,13 +196,12 @@
             const date = new Date(dateString);
             const now = new Date();
             const diffInSec = Math.floor((now - date) / 1000);
-
             if (diffInSec < 60) return `${diffInSec} segundos atrás`;
             const diffInMin = Math.floor(diffInSec / 60);
-            if (diffInMin < 60) return `${diffInMin} min atrás`;
+            if (diffInMin < 60) return `há ${diffInMin} min`;
             const diffInHour = Math.floor(diffInMin / 60);
-            if (diffInHour < 24) return `${diffInHour}h atrás`;
-            return `${Math.floor(diffInHour / 24)} dias atrás`;
+            if (diffInHour < 24) return `há ${diffInHour}h`;
+            return `há ${Math.floor(diffInHour / 24)} dias`;
         }
 
         async function fetchNews() {
@@ -244,25 +215,23 @@
                     if (res.status === 'fulfilled') {
                         const xml = new DOMParser().parseFromString(res.value, 'text/xml');
                         const items = Array.from(xml.querySelectorAll('item, entry')).map(item => {
-                    // Busca o link de forma robusta para diferentes padrões de RSS/Atom
-                    const linkEl = item.querySelector('link');
-                    const link = linkEl?.textContent || linkEl?.getAttribute('href') || '#';
-    
-                    return {
-                        title: decodeHTMLEntities(item.querySelector('title')?.textContent || ''),
-                        link: link.trim(), // Garante que não existam espaços
-                        pubDate: item.querySelector('pubDate, updated')?.textContent || '',
-                        source: FEEDS[idx].name,
-                        timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
-                        category: 'SÃO PAULO'
-                        };
-                    });
+                            const linkEl = item.querySelector('link');
+                            let link = linkEl?.textContent || linkEl?.getAttribute('href') || '#';
+                            if (link.startsWith('/')) link = 'https://' + FEEDS[idx].name.toLowerCase() + '.com.br' + link;
+                            return {
+                                title: decodeHTMLEntities(item.querySelector('title')?.textContent || ''),
+                                link: link.trim(),
+                                pubDate: item.querySelector('pubDate, updated')?.textContent || '',
+                                source: FEEDS[idx].name,
+                                timestamp: new Date(item.querySelector('pubDate, updated')?.textContent).getTime() || 0,
+                                category: 'SÃO PAULO'
+                            };
+                        });
 
                         items.forEach(item => {
                             const norm = normalizeTitle(item.title);
                             const matches = keywords.some(k => item.title.toLowerCase().includes(k));
                             const isHidden = hiddenNews.includes(norm);
-                            
                             if (matches && !isHidden && !allRSSItems.some(existing => normalizeTitle(existing.title) === norm)) {
                                 allRSSItems.push(item);
                             }
@@ -282,68 +251,50 @@
                 startCarousel();
                 updateLastUpdate();
             } catch (e) {
+                console.error(e);
                 setTimeout(fetchNews, 10000);
             }
         }
 
         function renderCarousel() {
-    const container = document.getElementById('carouselContainer');
-    if (newsItems.length === 0) {
-        container.innerHTML = "<div>Sem notícias no momento.</div>";
-        return;
-    }
+            const container = document.getElementById('carouselContainer');
+            if (newsItems.length === 0) {
+                container.innerHTML = "<div>Sem notícias no momento.</div>";
+                return;
+            }
 
-    container.innerHTML = newsItems.map((news, idx) => `
-        <div class="news-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
-            <div style="margin-bottom:15px">
-                <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold; text-transform: uppercase;">
-                    ${news.category || 'NOTÍCIA'}
-                </span>
-            </div>
-            <h2 class="news-title" 
-                onclick="${news.link && news.link !== '#' ? `window.open('${news.link}', '_blank')` : ''}" 
-                style="cursor: ${news.link && news.link !== '#' ? 'pointer' : 'default'};">
-                ${news.title}
-            </h2>
-            <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); padding-top:15px">
-                <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
-                <span>${formatRelativeTime(news.pubDate)}</span>
-            </div>
-        </div>
-    `).join('');
-    
-    currentIndex = 0;
-    updateCounter();
-}
-
-// Navegação por teclado
-document.addEventListener('keydown', (e) => {
-    const cards = document.querySelectorAll('.news-card');
-    if (!cards.length) return;
-
-    if (e.key === 'ArrowRight') {
-        cards[currentIndex].classList.remove('active');
-        currentIndex = (currentIndex + 1) % newsItems.length;
-        cards[currentIndex].classList.add('active');
-        updateCounter();
-        startCarousel(); 
-    } else if (e.key === 'ArrowLeft') {
-        cards[currentIndex].classList.remove('active');
-        currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
-        cards[currentIndex].classList.add('active');
-        updateCounter();
-        startCarousel();
-    }
-});
+            container.innerHTML = newsItems.map((news, idx) => `
+                <div class="news-card ${idx === 0 ? 'active' : ''}" data-index="${idx}">
+                    <div style="margin-bottom:15px">
+                        <span style="background:var(--color-accent); padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:bold; text-transform: uppercase;">
+                            ${news.category || 'NOTÍCIA'}
+                        </span>
+                    </div>
+                    <h2 class="news-title" 
+                        onclick="${news.link && news.link !== '#' ? `window.open('${news.link}', '_blank')` : ''}" 
+                        style="cursor: ${news.link && news.link !== '#' ? 'pointer' : 'default'};">
+                        ${news.title}
+                    </h2>
+                    <div style="display:flex; gap:20px; color:var(--color-text-secondary); border-top:1px solid var(--color-border); padding-top:15px">
+                        <span style="color:var(--color-accent); font-weight:bold">${news.source}</span>
+                        <span>${formatRelativeTime(news.pubDate)}</span>
+                    </div>
+                </div>
+            `).join('');
+            currentIndex = 0;
+            updateCounter();
+        }
 
         function addCustomNews() {
             const title = document.getElementById('customTitle').value;
             const source = document.getElementById('customSource').value;
             const category = document.getElementById('customCategory').value;
+            const link = document.getElementById('customLink').value;
             if (!title) return;
 
             const newItem = {
                 title: decodeHTMLEntities(title),
+                link: link || '#',
                 source: source || 'Comunicado',
                 category: category || 'AVISO',
                 pubDate: new Date().toISOString(),
@@ -353,12 +304,10 @@ document.addEventListener('keydown', (e) => {
 
             customNews.push(newItem);
             localStorage.setItem('customNews', JSON.stringify(customNews));
-            
-            // Limpa campos
             document.getElementById('customTitle').value = '';
             document.getElementById('customSource').value = '';
             document.getElementById('customCategory').value = '';
-            
+            document.getElementById('customLink').value = '';
             fetchNews();
             toggleManager();
         }
@@ -393,12 +342,10 @@ document.addEventListener('keydown', (e) => {
             customNews.forEach((n, i) => {
                 html += `<div class="manager-item"><span>📌 ${n.title.substring(0,40)}...</span><button class="btn-delete" onclick="deleteCustom(${i})">Remover</button></div>`;
             });
-
             html += '<p style="font-size:0.8rem; color:var(--color-accent); margin:15px 0 10px">Visíveis (RSS):</p>';
             newsItems.filter(n => !n.isCustom).forEach(n => {
                 html += `<div class="manager-item"><span>${n.title.substring(0,40)}...</span><button class="btn-hide" onclick="hideNewsItem('${n.title.replace(/'/g, "\\'")}')">Ocultar</button></div>`;
             });
-
             html += '<p style="font-size:0.8rem; color:var(--color-accent); margin:15px 0 10px">Ocultas:</p>';
             hiddenNews.forEach(norm => {
                 html += `<div class="manager-item" style="opacity:0.5"><span>ID: ${norm}</span><button class="btn-restore" onclick="restoreNewsItem('${norm}')">Restaurar</button></div>`;
@@ -407,22 +354,42 @@ document.addEventListener('keydown', (e) => {
         }
 
         function startCarousel() {
+            // Limpa os intervalos existentes para resetar o tempo
             if (slideInterval) clearInterval(slideInterval);
+            if (progressInterval) clearInterval(progressInterval);
+
+            // Carrossel Automático
             slideInterval = setInterval(() => {
-                const cards = document.querySelectorAll('.news-card');
-                if(!cards.length) return;
-                cards[currentIndex].classList.remove('active');
-                currentIndex = (currentIndex + 1) % newsItems.length;
-                cards[currentIndex].classList.add('active');
-                updateCounter();
+                changeSlide(1);
             }, SLIDE_DURATION);
 
-            if (progressInterval) clearInterval(progressInterval);
+            // Barra de Progresso
             let p = 0;
+            const progressBar = document.getElementById('progressBar');
             progressInterval = setInterval(() => {
                 p += 1;
-                document.getElementById('progressBar').style.width = (p % 101) + '%';
+                progressBar.style.width = (p % 101) + '%';
             }, SLIDE_DURATION / 100);
+        }
+
+        function changeSlide(direction) {
+            const cards = document.querySelectorAll('.news-card');
+            if(!cards.length) return;
+
+            // Remove ativo do atual
+            cards[currentIndex].classList.remove('active');
+
+            // Calcula novo índice
+            currentIndex = (currentIndex + direction + newsItems.length) % newsItems.length;
+
+            // Adiciona ativo ao novo
+            cards[currentIndex].classList.add('active');
+            updateCounter();
+            
+            // Reinicia o progresso visual
+            if (progressInterval) {
+                document.getElementById('progressBar').style.width = '0%';
+            }
         }
 
         function updateCounter() {
@@ -440,35 +407,25 @@ document.addEventListener('keydown', (e) => {
             setTimeout(() => { fetchNews(); setInterval(fetchNews, 30 * 60 * 1000); }, wait);
         }
 
+        // Navegação por teclado Corrigida
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                const dir = e.key === 'ArrowRight' ? 1 : -1;
+                
+                // 1. Mata o cronômetro imediatamente para ele não rodar durante a troca manual
+                if (slideInterval) clearInterval(slideInterval);
+                if (progressInterval) clearInterval(progressInterval);
+
+                // 2. Troca o slide
+                changeSlide(dir);
+
+                // 3. Reinicia o cronômetro do zero
+                startCarousel();
+            }
+        });
+
         fetchNews();
         scheduleUpdates();
-        // Funcionalidade de navegação por teclado
-document.addEventListener('keydown', (e) => {
-    const cards = document.querySelectorAll('.news-card');
-    if (!cards.length) return;
-
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        // 1. Para o carrossel imediatamente para evitar conflito
-        clearInterval(slideInterval);
-        clearInterval(progressInterval);
-
-        // 2. Remove a classe ativa do card atual
-        cards[currentIndex].classList.remove('active');
-
-        if (e.key === 'ArrowRight') {
-            currentIndex = (currentIndex + 1) % newsItems.length;
-        } else {
-            currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
-        }
-
-        // 3. Ativa o novo card e atualiza interface
-        cards[currentIndex].classList.add('active');
-        updateCounter();
-
-        // 4. Reinicia o carrossel do zero (resetando o timer de 12s)
-        startCarousel();
-    }
-});
     </script>
 </body>
 </html>
