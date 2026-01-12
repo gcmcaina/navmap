@@ -444,22 +444,29 @@ document.addEventListener('keydown', (e) => {
         scheduleUpdates();
         // Funcionalidade de navegação por teclado
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight') {
-        // Avança para a próxima notícia
-        const cards = document.querySelectorAll('.news-card');
+    const cards = document.querySelectorAll('.news-card');
+    if (!cards.length) return;
+
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        // 1. Para o carrossel imediatamente para evitar conflito
+        clearInterval(slideInterval);
+        clearInterval(progressInterval);
+
+        // 2. Remove a classe ativa do card atual
         cards[currentIndex].classList.remove('active');
-        currentIndex = (currentIndex + 1) % newsItems.length;
+
+        if (e.key === 'ArrowRight') {
+            currentIndex = (currentIndex + 1) % newsItems.length;
+        } else {
+            currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
+        }
+
+        // 3. Ativa o novo card e atualiza interface
         cards[currentIndex].classList.add('active');
         updateCounter();
-        startCarousel(); // Reinicia o timer para não pular rápido demais
-    } else if (e.key === 'ArrowLeft') {
-        // Volta para a notícia anterior
-        const cards = document.querySelectorAll('.news-card');
-        cards[currentIndex].classList.remove('active');
-        currentIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
-        cards[currentIndex].classList.add('active');
-        updateCounter();
-        startCarousel(); // Reinicia o timer
+
+        // 4. Reinicia o carrossel do zero (resetando o timer de 12s)
+        startCarousel();
     }
 });
     </script>
